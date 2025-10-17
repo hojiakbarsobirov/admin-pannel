@@ -17,7 +17,7 @@ const Layout = () => {
         </aside>
 
         {/* O‘ngdagi asosiy kontent */}
-        <main className="flex-1 bg-gray-50 h-[calc(100vh-4rem)] overflow-y-auto p-3">
+        <main className="flex-1 bg-gray-50 h-[calc(100vh-4rem)] overflow-y-auto">
           <Outlet />
         </main>
       </div>

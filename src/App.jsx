@@ -23,7 +23,6 @@ const App = () => {
           <Route path="/admin-page" element={<AdminPage/>} />
         </Route>
       </Routes>
-      <div></div>
     </>
   );
 };
