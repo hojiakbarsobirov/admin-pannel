@@ -30,7 +30,6 @@ const DeletedUsersPage = () => {
   const handleRestore = async () => {
     if (!selectedUser) return;
     try {
-      // Registratsiya ga qo‘shish
       await addDoc(collection(db, "registrations"), {
         name: selectedUser.name,
         phone: selectedUser.phone,
@@ -38,16 +37,13 @@ const DeletedUsersPage = () => {
         createdAt: new Date().toISOString(),
       });
 
-      // deleted-users dan to‘liq o‘chirish
       await deleteDoc(doc(db, "deleted-users", selectedUser.id));
-
-      // Frontenddan darhol olib tashlash
-      setDeletedUsers((prev) => prev.filter((u) => u.id !== selectedUser.id));
 
       setShowRestoreModal(false);
       setSelectedUser(null);
     } catch (error) {
       console.error("❌ Qayta tiklashda xatolik:", error);
+      alert("❌ Qayta tiklashda muammo yuz berdi!");
     }
   };
 
@@ -55,16 +51,12 @@ const DeletedUsersPage = () => {
   const handlePermanentDelete = async () => {
     if (!selectedUser) return;
     try {
-      // deleted-users dan to‘liq o‘chirish
       await deleteDoc(doc(db, "deleted-users", selectedUser.id));
-
-      // Frontenddan darhol olib tashlash
-      setDeletedUsers((prev) => prev.filter((u) => u.id !== selectedUser.id));
-
       setShowDeleteModal(false);
       setSelectedUser(null);
     } catch (error) {
       console.error("❌ O‘chirishda xatolik:", error);
+      alert("❌ O‘chirishda muammo yuz berdi!");
     }
   };
 
@@ -83,8 +75,8 @@ const DeletedUsersPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-3 sm:px-6">
-      <h2 className="text-xl sm:text-2xl font-semibold text-red-600 mb-5 text-center">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-3 sm:px-2">
+      <h2 className="text-xl sm:text-2xl font-semibold text-blue-500 mb-5 text-center">
         🗑 O‘chirilgan foydalanuvchilar
       </h2>
 
@@ -94,11 +86,11 @@ const DeletedUsersPage = () => {
           placeholder="🔍 Ism yoki raqam orqali qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="w-full border border-gray-300 rounded px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-[1px] focus:ring-blue-500"
         />
       </div>
 
-      <div className="w-full max-w-6xl bg-white rounded-lg overflow-hidden border border-gray-300 shadow">
+      <div className="w-full bg-white rounded overflow-hidden">
         {loading ? (
           <p className="text-center text-gray-500 py-10">⏳ Ma’lumotlar yuklanmoqda...</p>
         ) : filteredUsers.length === 0 ? (
@@ -108,7 +100,7 @@ const DeletedUsersPage = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left border-collapse text-sm sm:text-base">
-              <thead className="bg-red-600 text-white">
+              <thead className="bg-blue-500 text-white">
                 <tr>
                   <th className="py-3 px-4 font-medium">#</th>
                   <th className="py-3 px-4 font-medium">Ism</th>
@@ -122,7 +114,9 @@ const DeletedUsersPage = () => {
                 {filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    className={`border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"} hover:bg-red-50 transition`}
+                    className={`border-b ${
+                      index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                    } hover:bg-red-50 transition`}
                   >
                     <td className="py-2 px-4">{index + 1}</td>
                     <td className="py-2 px-4">{user.name}</td>
@@ -132,15 +126,15 @@ const DeletedUsersPage = () => {
                     <td className="py-2 px-4 text-center space-x-2">
                       <button
                         onClick={() => { setSelectedUser(user); setShowRestoreModal(true); }}
-                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                        className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
                       >
-                        ♻️ Qayta tiklash
+                        ♻️ tiklash
                       </button>
                       <button
                         onClick={() => { setSelectedUser(user); setShowDeleteModal(true); }}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                        className="px-2 py-1 hover:scale-125 text-white rounded transition"
                       >
-                        🗑 O‘chirish
+                        🗑
                       </button>
                     </td>
                   </tr>
@@ -151,6 +145,7 @@ const DeletedUsersPage = () => {
         )}
       </div>
 
+      {/* Qayta tiklash modal */}
       {showRestoreModal && selectedUser && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[380px] shadow-lg text-center">
@@ -174,6 +169,7 @@ const DeletedUsersPage = () => {
         </div>
       )}
 
+      {/* Butunlay o‘chirish modal */}
       {showDeleteModal && selectedUser && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[380px] shadow-lg text-center">
@@ -196,6 +192,7 @@ const DeletedUsersPage = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

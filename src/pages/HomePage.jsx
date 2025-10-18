@@ -18,11 +18,28 @@ const HomePage = () => {
     setLoading(true);
     try {
       const snapshot = await getDocs(collection(db, "registrations"));
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const data = snapshot.docs.map((doc, index) => {
+        const docData = doc.data();
+        let createdAtDate = null;
+
+        if (docData.createdAt) {
+          if (typeof docData.createdAt.toDate === "function") {
+            createdAtDate = docData.createdAt.toDate();
+          } else {
+            createdAtDate = new Date(docData.createdAt);
+          }
+        }
+
+        return {
+          id: doc.id,
+          ...docData,
+          createdAt: createdAtDate,
+        };
+      });
+
+      // Yangi tushganlarni tepaga chiqarish
+      data.sort((a, b) => b.createdAt - a.createdAt);
+
       setUsers(data);
     } catch (error) {
       console.error("Xatolik:", error);
@@ -107,7 +124,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-3 sm:px-6">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-3 sm:px-2">
       <h2 className="text-xl sm:text-2xl font-semibold text-blue-700 mb-5 text-center">
         📋 Ro‘yxatdan o‘tgan foydalanuvchilar
       </h2>
@@ -119,12 +136,12 @@ const HomePage = () => {
           placeholder="🔍 Ism yoki raqam orqali qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Jadval */}
-      <div className="w-full max-w-6xl bg-white rounded-lg overflow-hidden border border-gray-300">
+      <div className="w-full bg-white rounded overflow-hidden">
         {loading ? (
           <p className="text-center text-gray-500 py-10">
             ⏳ Ma’lumotlar yuklanmoqda...
@@ -149,7 +166,7 @@ const HomePage = () => {
               <tbody>
                 {filteredUsers.map((user, index) => (
                   <tr
-                    key={user.id}
+                    key={user.id + index} // unique key
                     className={`border-b ${
                       index % 2 === 0 ? "bg-gray-100" : "bg-white"
                     } hover:bg-blue-50 transition`}
@@ -162,15 +179,15 @@ const HomePage = () => {
                     <td className="py-2 px-4 text-center space-x-2">
                       <button
                         onClick={() => openFeedbackModal(user)}
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-green-700 transition"
+                        className="px-1 py-1 bg-yellow-500 text-white rounded hover:bg-green-700 transition"
                       >
                         📞 Qayta aloqa
                       </button>
                       <button
                         onClick={() => openDeleteModal(user)}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                        className="px-2 py-1  text-white rounded hover:scale-125 transition"
                       >
-                        🗑 O‘chirish
+                        🗑
                       </button>
                     </td>
                   </tr>

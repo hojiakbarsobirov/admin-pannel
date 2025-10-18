@@ -5,9 +5,9 @@ const NavbarPage = () => {
     <>
       <nav className="bg-blue-500 w-full h-16 flex justify-between items-center px-4 sm:px-8">
         {/* Chap tarafdagi logo */}
-        <h3 className="text-white font-semibold text-lg sm:text-xl">
+        {/* <h3 className="text-white font-semibold text-lg sm:text-xl">
           RuSpeak.uz
-        </h3>
+        </h3> */}
 
         {/* O‘rta qism (faqat o‘rta va katta ekranlarda ko‘rinadi) */}
         <h2 className="hidden sm:block font-medium text-white text-base">
