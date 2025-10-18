@@ -60,7 +60,7 @@ const FeedBackPage = () => {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-3 sm:px-2">
-      <h2 className="text-xl sm:text-2xl font-semibold text-blue-500 mb-5 text-center">
+      <h2 className="text-xl sm:text-3xl font-bold text-blue-500 mb-5 text-center">
         📞 Qayta aloqa foydalanuvchilari
       </h2>
 

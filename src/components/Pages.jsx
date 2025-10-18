@@ -20,7 +20,7 @@ const Pages = () => {
             }`
           }
         >
-          <h4 className="text-sm">Barcha Mijozlar</h4>
+          <h4 className="text-sm">Leads</h4>
         </NavLink>
 
         <NavLink
