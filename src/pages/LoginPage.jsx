@@ -12,7 +12,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    if (login === "admin" && password === "12345") {
+    if (login === "Boss123" && password === "Bigboss123") {
       localStorage.setItem("isLoggedIn", "true");
       setIsLoggedIn(true);
       navigate("/");
