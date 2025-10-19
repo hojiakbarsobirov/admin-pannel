@@ -1,83 +1,65 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaSearch, FaUserAlt, FaChartPie, FaTrash, FaComments } from "react-icons/fa";
+import {
+  FaHome,
+  FaComments,
+  FaTrash,
+  FaChartPie,
+  FaUserTie,
+  FaBars,
+  FaMoneyBillWave,
+} from "react-icons/fa";
 
 const Pages = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const userRole = localStorage.getItem("role"); // "admin" yoki "manager"
+
+  // 🔹 Umumiy menyular (barchada bo‘ladi)
+  const commonLinks = [
+    { to: "/", label: "Leads" },
+    { to: "/feedback", label: "Qayta A'loqa" },
+    { to: "/deleted-users", label: "O‘chirilgan mijozlar" },
+    { to: "/finance", label: "Moliyaviy boshqaruv" },
+    { to: "/admin-page", label: "Admin Panel" },
+  ];
+
+  // 🔹 Faqat menejerda ko‘rinadigan sahifalar
+  const managerOnlyLinks = [
+    { to: "/statistika", label: "Statistika" },
+    { to: "/manager-page", label: "Menejer Sahifasi" },
+  ];
+
+  // 🔹 Agar menejer bo‘lsa — hammasini qo‘shamiz
+  // 🔹 Agar admin bo‘lsa — menejerga xoslarini qo‘shmaymiz
+  const links =
+    userRole === "manager"
+      ? [...commonLinks, ...managerOnlyLinks]
+      : commonLinks;
 
   return (
     <>
-      <section
-        className={`hidden sm:flex flex-col justify-start items-start py-5 px-2 w-60`}
-      >
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
-              isActive
-                ? "bg-blue-500 text-white"
-                : "hover:bg-blue-500 hover:text-white"
-            }`
-          }
-        >
-          <h4 className="text-sm">Leads</h4>
-        </NavLink>
-
-        <NavLink
-          to="/feedback"
-          className={({ isActive }) =>
-            `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
-              isActive
-                ? "bg-blue-500 text-white"
-                : "hover:bg-blue-500 hover:text-white"
-            }`
-          }
-        >
-          <h4 className="text-sm">Qayta A'loqa</h4>
-        </NavLink>
-
-        <NavLink
-          to="/deleted-users"
-          className={({ isActive }) =>
-            `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
-              isActive
-                ? "bg-blue-500 text-white"
-                : "hover:bg-blue-500 hover:text-white"
-            }`
-          }
-        >
-          <h4 className="text-sm">O'chirilgan mijozlar</h4>
-        </NavLink>
-
-        <NavLink
-          to="/statistika"
-          className={({ isActive }) =>
-            `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
-              isActive
-                ? "bg-blue-500 text-white"
-                : "hover:bg-blue-500 hover:text-white"
-            }`
-          }
-        >
-          <h4 className="text-sm">Statistika</h4>
-        </NavLink>
-
-        <NavLink
-          to="/admin-page"
-          className={({ isActive }) =>
-            `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
-              isActive
-                ? "bg-blue-500 text-white"
-                : "hover:bg-blue-500 hover:text-white"
-            }`
-          }
-        >
-          <h4 className="text-sm">Admin</h4>
-        </NavLink>
+      {/* --- CHAP SIDEBAR (desktop uchun) --- */}
+      <section className="hidden sm:flex flex-col justify-start items-start py-5 px-2 w-60">
+        {links.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
+                isActive
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-blue-500 hover:text-white"
+              }`
+            }
+          >
+            <h4 className="text-sm">{item.label}</h4>
+          </NavLink>
+        ))}
       </section>
 
-      {/* --- MOBIL PASTKI MENYU (Instagram uslubi) --- */}
+      {/* --- MOBIL PASTKI MENYU --- */}
       <nav className="sm:hidden fixed bottom-0 left-0 w-full bg-white border-t shadow-md flex justify-around items-center py-2 z-50">
+        {/* Home */}
         <NavLink
           to="/"
           className={({ isActive }) =>
@@ -90,6 +72,7 @@ const Pages = () => {
           <span className="text-[10px]">Home</span>
         </NavLink>
 
+        {/* Feedback */}
         <NavLink
           to="/feedback"
           className={({ isActive }) =>
@@ -102,6 +85,7 @@ const Pages = () => {
           <span className="text-[10px]">Feedback</span>
         </NavLink>
 
+        {/* Deleted */}
         <NavLink
           to="/deleted-users"
           className={({ isActive }) =>
@@ -114,29 +98,55 @@ const Pages = () => {
           <span className="text-[10px]">Deleted</span>
         </NavLink>
 
+        {/* Finance */}
         <NavLink
-          to="/statistika"
+          to="/finance"
           className={({ isActive }) =>
             `flex flex-col items-center text-xs ${
               isActive ? "text-blue-500" : "text-gray-500"
             }`
           }
         >
-          <FaChartPie size={20} />
-          <span className="text-[10px]">Stats</span>
+          <FaMoneyBillWave size={20} />
+          <span className="text-[10px]">Finance</span>
         </NavLink>
 
-        <NavLink
-          to="/admin-page"
-          className={({ isActive }) =>
-            `flex flex-col items-center text-xs ${
-              isActive ? "text-blue-500" : "text-gray-500"
-            }`
-          }
+        {/* --- Faqat manager uchun --- */}
+        {userRole === "manager" && (
+          <>
+            <NavLink
+              to="/statistika"
+              className={({ isActive }) =>
+                `flex flex-col items-center text-xs ${
+                  isActive ? "text-blue-500" : "text-gray-500"
+                }`
+              }
+            >
+              <FaChartPie size={20} />
+              <span className="text-[10px]">Statistika</span>
+            </NavLink>
+
+            <NavLink
+              to="/manager-page"
+              className={({ isActive }) =>
+                `flex flex-col items-center text-xs ${
+                  isActive ? "text-blue-500" : "text-gray-500"
+                }`
+              }
+            >
+              <FaUserTie size={20} />
+              <span className="text-[10px]">Manager</span>
+            </NavLink>
+          </>
+        )}
+
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="flex flex-col items-center text-xs text-gray-500"
         >
-          <FaUserAlt size={20} />
-          <span className="text-[10px]">Admin</span>
-        </NavLink>
+          <FaBars size={20} />
+          <span className="text-[10px]">Menu</span>
+        </button>
       </nav>
     </>
   );

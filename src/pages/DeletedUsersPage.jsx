@@ -60,12 +60,14 @@ const DeletedUsersPage = () => {
     }
   };
 
+  // 🔍 Qidiruv
   const filteredUsers = deletedUsers.filter(
     (u) =>
       u.name?.toLowerCase().includes(search.toLowerCase()) ||
       u.phone?.includes(search)
   );
 
+  // 🕒 Vaqt formatlash
   const formatUzTime = (timestamp) => {
     if (!timestamp) return "-";
     const date = new Date(timestamp);
@@ -75,11 +77,12 @@ const DeletedUsersPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-3 sm:px-2">
-      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-0 sm:px-2">
+      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-2 text-center">
         🗑 O‘chirilgan foydalanuvchilar
       </h2>
 
+      {/* Qidiruv input */}
       <div className="w-full max-w-5xl mb-4">
         <input
           type="text"
@@ -90,9 +93,12 @@ const DeletedUsersPage = () => {
         />
       </div>
 
+      {/* Jadval */}
       <div className="w-full bg-white rounded overflow-hidden">
         {loading ? (
-          <p className="text-center text-gray-500 py-10">⏳ Ma’lumotlar yuklanmoqda...</p>
+          <p className="text-center text-gray-500 py-10">
+            ⏳ Ma’lumotlar yuklanmoqda...
+          </p>
         ) : filteredUsers.length === 0 ? (
           <p className="text-center text-gray-500 py-10">
             O‘chirilgan foydalanuvchilar topilmadi 😕
@@ -113,7 +119,7 @@ const DeletedUsersPage = () => {
               <tbody>
                 {filteredUsers.map((user, index) => (
                   <tr
-                    key={user.id}
+                    key={`${user.id}-${index}`} // ✅ endi unique key
                     className={`border-b ${
                       index % 2 === 0 ? "bg-gray-100" : "bg-white"
                     } hover:bg-red-50 transition`}
@@ -125,17 +131,23 @@ const DeletedUsersPage = () => {
                     <td className="py-2 px-4">{formatUzTime(user.deletedAt)}</td>
                     <td className="py-2 px-4 text-center space-x-2">
                       <button
-                        onClick={() => { setSelectedUser(user); setShowRestoreModal(true); }}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowRestoreModal(true);
+                        }}
                         className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
                       >
                         ♻️ tiklash
                       </button>
-                      <button
-                        onClick={() => { setSelectedUser(user); setShowDeleteModal(true); }}
-                        className="px-2 py-1 hover:scale-125 text-white rounded transition"
+                      {/* <button
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowDeleteModal(true);
+                        }}
+                        className="px-2 py-1 text-white rounded hover:scale-125 transition"
                       >
                         🗑
-                      </button>
+                      </button> */}
                     </td>
                   </tr>
                 ))}
@@ -145,15 +157,22 @@ const DeletedUsersPage = () => {
         )}
       </div>
 
-      {/* Qayta tiklash modal */}
+      {/* ♻️ Qayta tiklash modal */}
       {showRestoreModal && selectedUser && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
+        <div className="fixed inset-0 flex justify-center items-center bg-black/40 z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[380px] shadow-lg text-center">
-            <h3 className="text-lg font-semibold text-green-600 mb-3">♻️ Qayta tiklash</h3>
-            <p className="text-gray-700 mb-5">{selectedUser.name} ni qayta tiklamoqchimisiz?</p>
+            <h3 className="text-lg font-semibold text-green-600 mb-3">
+              ♻️ Qayta tiklash
+            </h3>
+            <p className="text-gray-700 mb-5">
+              {selectedUser.name} ni qayta tiklamoqchimisiz?
+            </p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => { setShowRestoreModal(false); setSelectedUser(null); }}
+                onClick={() => {
+                  setShowRestoreModal(false);
+                  setSelectedUser(null);
+                }}
                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
               >
                 Bekor qilish
@@ -169,15 +188,22 @@ const DeletedUsersPage = () => {
         </div>
       )}
 
-      {/* Butunlay o‘chirish modal */}
+      {/* 🗑 Butunlay o‘chirish modal */}
       {showDeleteModal && selectedUser && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
+        <div className="fixed inset-0 flex justify-center items-center bg-black/40 z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[380px] shadow-lg text-center">
-            <h3 className="text-lg font-semibold text-red-600 mb-3">🗑 Foydalanuvchini butunlay o‘chirish</h3>
-            <p className="text-gray-700 mb-5">{selectedUser.name} ni bazadan butunlay o‘chirmoqchimisiz?</p>
+            <h3 className="text-lg font-semibold text-red-600 mb-3">
+              🗑 Foydalanuvchini butunlay o‘chirish
+            </h3>
+            <p className="text-gray-700 mb-5">
+              {selectedUser.name} ni bazadan butunlay o‘chirmoqchimisiz?
+            </p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => { setShowDeleteModal(false); setSelectedUser(null); }}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedUser(null);
+                }}
                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
               >
                 Bekor qilish
@@ -192,7 +218,6 @@ const DeletedUsersPage = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

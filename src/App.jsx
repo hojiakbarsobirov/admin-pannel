@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Layout from "./components/Layout/Layout";
@@ -7,16 +8,22 @@ import DeletedUsersPage from "./pages/DeletedUsersPage";
 import FeedBackPage from "./pages/FeedBackPage";
 import StatistikaPage from "./pages/StatistikaPage";
 import AdminPage from "./pages/AdminPage";
+import ManagerPage from "./pages/ManagerPage";
+import FinancePage from "./pages/FinancePage";
 import LoginPage from "./pages/LoginPage";
 
 const App = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn");
+    const userRole = localStorage.getItem("role");
+
     if (loggedIn === "true") {
       setIsLoggedIn(true);
+      setRole(userRole);
     } else {
       setIsLoggedIn(false);
       navigate("/login");
@@ -25,14 +32,15 @@ const App = () => {
 
   return (
     <Routes>
-      {/* Login sahifasi */}
+      {/* 🔐 Login sahifasi */}
       <Route
         path="/login"
         element={<LoginPage setIsLoggedIn={setIsLoggedIn} />}
       />
 
-      {/* Admin panel uchun Layout */}
+      {/* 🔧 Asosiy Layout */}
       <Route element={<Layout setIsLoggedIn={setIsLoggedIn} />}>
+        {/* 🏠 Barcha foydalanuvchilar uchun (admin & manager) */}
         <Route
           path="/"
           element={
@@ -43,6 +51,7 @@ const App = () => {
             )
           }
         />
+
         <Route
           path="/all-users"
           element={
@@ -53,6 +62,7 @@ const App = () => {
             )
           }
         />
+
         <Route
           path="/deleted-users"
           element={
@@ -63,6 +73,7 @@ const App = () => {
             )
           }
         />
+
         <Route
           path="/feedback"
           element={
@@ -73,21 +84,49 @@ const App = () => {
             )
           }
         />
+
+        {/* 📊 Statistika — FAQAT menejer uchun */}
         <Route
           path="/statistika"
           element={
-            isLoggedIn ? (
+            isLoggedIn && role === "manager" ? (
               <StatistikaPage />
             ) : (
               <LoginPage setIsLoggedIn={setIsLoggedIn} />
             )
           }
         />
+
+        {/* 💰 Finance — admin va menejer uchun */}
+        <Route
+          path="/finance"
+          element={
+            isLoggedIn && (role === "admin" || role === "manager") ? (
+              <FinancePage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
+        />
+
+        {/* 👑 Admin sahifasi — faqat admin uchun */}
         <Route
           path="/admin-page"
           element={
-            isLoggedIn ? (
+            isLoggedIn && role === "admin" ? (
               <AdminPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
+        />
+
+        {/* 🧑‍💼 Menejer sahifasi — faqat menejer uchun */}
+        <Route
+          path="/manager-page"
+          element={
+            isLoggedIn && role === "manager" ? (
+              <ManagerPage />
             ) : (
               <LoginPage setIsLoggedIn={setIsLoggedIn} />
             )
