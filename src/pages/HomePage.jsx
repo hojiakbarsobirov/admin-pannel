@@ -18,6 +18,7 @@ const HomePage = () => {
     operator: "",
     amount: "",
     paymentType: "naqt",
+    date: "",
   });
 
   const navigate = useNavigate();
@@ -75,10 +76,11 @@ const HomePage = () => {
   const openPaymentModal = (user) => { 
     setSelectedUser(user); 
     setShowPaymentModal(true); 
-    setPaymentData({ tarif: "", groupName: "", operator: "", amount: "", paymentType: "naqt" }); 
+    setPaymentData({ tarif: "", groupName: "", operator: "", amount: "", paymentType: "naqt", date: "" }); 
   };
+
   const handlePaymentSubmit = async () => {
-    if (!paymentData.tarif || !paymentData.groupName || !paymentData.operator || !paymentData.amount) {
+    if (!paymentData.tarif || !paymentData.groupName || !paymentData.operator || !paymentData.amount || !paymentData.date) {
       alert("❌ Barcha maydonlarni to‘ldiring!");
       return;
     }
@@ -168,39 +170,6 @@ const HomePage = () => {
         )}
       </div>
 
-      {/* Feedback Modal */}
-      {showModal && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[400px] shadow-lg">
-            <h3 className="text-lg font-semibold mb-4 text-center text-blue-700">📞 Qayta aloqa sababi</h3>
-            <textarea
-              value={feedbackReason}
-              onChange={(e) => setFeedbackReason(e.target.value)}
-              placeholder="Masalan: 2 kundan keyin aloqaga chiqish kerak..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
-              <button onClick={handleFeedbackSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Saqlash</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[380px] shadow-lg text-center">
-            <h3 className="text-lg font-semibold text-red-600 mb-3">🗑 Foydalanuvchini o‘chirish</h3>
-            <p className="text-gray-700 mb-5">{selectedUser?.name} ni ro‘yxatdan o‘chirmoqchimisiz?</p>
-            <div className="flex justify-center gap-4">
-              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
-              <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">Ha, o‘chirilsin</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Payment Modal */}
       {showPaymentModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50 overflow-auto p-4">
@@ -223,6 +192,9 @@ const HomePage = () => {
 
               <label>To‘lov summasi</label>
               <input type="number" className="border border-gray-300 rounded px-3 py-2" value={paymentData.amount} onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })} />
+
+              <label>To‘lov sanasi</label>
+              <input type="date" className="border border-gray-300 rounded px-3 py-2" value={paymentData.date} onChange={(e) => setPaymentData({ ...paymentData, date: e.target.value })} />
 
               <label>To‘lov turi</label>
               <select className="border border-gray-300 rounded px-3 py-2" value={paymentData.paymentType} onChange={(e) => setPaymentData({ ...paymentData, paymentType: e.target.value })}>

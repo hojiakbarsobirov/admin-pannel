@@ -1,13 +1,6 @@
-// FinancePage.jsx
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 
 const FinancePage = () => {
   const [payments, setPayments] = useState([]);
@@ -16,10 +9,9 @@ const FinancePage = () => {
   const [editData, setEditData] = useState({});
   const [expandedRow, setExpandedRow] = useState(null);
 
-  // 🔹 Raqamni formatlash funksiyasi
   const formatNumber = (num) => {
     if (!num) return "-";
-    return Number(num).toLocaleString("uz-UZ"); // 1.000.000 ko‘rinishda
+    return Number(num).toLocaleString("uz-UZ");
   };
 
   const fetchPayments = async () => {
@@ -52,6 +44,7 @@ const FinancePage = () => {
       operator: payment.operator || "",
       amount: payment.amount || "",
       paymentType: payment.paymentType || "naqt",
+      date: payment.date || "",
     });
     setExpandedRow(payment.id);
   };
@@ -63,9 +56,7 @@ const FinancePage = () => {
 
   const handleSave = async () => {
     if (!editPaymentId) return;
-
     const docRef = doc(db, "payments", editPaymentId);
-
     try {
       const docSnap = await getDoc(docRef);
       if (!docSnap.exists()) {
@@ -85,6 +76,7 @@ const FinancePage = () => {
         operator: editData.operator || "",
         amount: editData.amount || "",
         paymentType: editData.paymentType || "naqt",
+        date: editData.date || "",
       });
 
       alert("✅ Ma’lumotlar yangilandi!");
@@ -138,7 +130,6 @@ const FinancePage = () => {
                     <td className="py-2 px-3">{index + 1}</td>
                     <td className="py-2 px-3">{p.name}</td>
                     <td className="py-2 px-3">{p.phone}</td>
-                    {/* 🔹 Formatlangan summa */}
                     <td className="py-2 px-3">{formatNumber(p.amount)}</td>
                     <td className="py-2 px-3">
                       <button
@@ -164,94 +155,33 @@ const FinancePage = () => {
                           <div className="grid gap-2">
                             {editPaymentId !== p.id ? (
                               <>
-                                <p>
-                                  <strong>Ism:</strong> {p.name}
-                                </p>
-                                <p>
-                                  <strong>Telefon:</strong> {p.phone}
-                                </p>
-                                <p>
-                                  <strong>Tarif:</strong> {p.tarif}
-                                </p>
-                                <p>
-                                  <strong>Guruh:</strong> {p.groupName}
-                                </p>
-                                <p>
-                                  <strong>Operator:</strong> {p.operator}
-                                </p>
-                                <p>
-                                  <strong>Summasi:</strong>{" "}
-                                  {formatNumber(p.amount)}
-                                </p>
-                                <p>
-                                  <strong>To‘lov turi:</strong> {p.paymentType}
-                                </p>
+                                <p><strong>Ism:</strong> {p.name}</p>
+                                <p><strong>Telefon:</strong> {p.phone}</p>
+                                <p><strong>Tarif:</strong> {p.tarif}</p>
+                                <p><strong>Guruh:</strong> {p.groupName}</p>
+                                <p><strong>Operator:</strong> {p.operator}</p>
+                                <p><strong>Summasi:</strong> {formatNumber(p.amount)}</p>
+                                <p><strong>To‘lov turi:</strong> {p.paymentType}</p>
+                                <p><strong>To‘lov sanasi:</strong> {p.date || "-"}</p>
                               </>
                             ) : (
                               <>
-                                <input
-                                  type="text"
-                                  name="name"
-                                  value={editData.name || ""}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                  placeholder="Ism"
-                                />
-                                <input
-                                  type="text"
-                                  name="phone"
-                                  value={editData.phone || ""}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                  placeholder="Telefon"
-                                />
-                                <input
-                                  type="text"
-                                  name="tarif"
-                                  value={editData.tarif || ""}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                  placeholder="Tarif"
-                                />
-                                <input
-                                  type="text"
-                                  name="groupName"
-                                  value={editData.groupName || ""}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                  placeholder="Guruh"
-                                />
-                                <input
-                                  type="text"
-                                  name="operator"
-                                  value={editData.operator || ""}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                  placeholder="Operator"
-                                />
-                                <input
-                                  type="number"
-                                  name="amount"
-                                  value={editData.amount || ""}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                  placeholder="Summasi"
-                                />
-                                <select
-                                  name="paymentType"
-                                  value={editData.paymentType || "naqt"}
-                                  onChange={handleChange}
-                                  className="border px-2 py-1 rounded w-full"
-                                >
+                                <input name="name" value={editData.name} onChange={handleChange} className="border px-2 py-1 rounded" placeholder="Ism" />
+                                <input name="phone" value={editData.phone} onChange={handleChange} className="border px-2 py-1 rounded" placeholder="Telefon" />
+                                <input name="tarif" value={editData.tarif} onChange={handleChange} className="border px-2 py-1 rounded" placeholder="Tarif" />
+                                <input name="groupName" value={editData.groupName} onChange={handleChange} className="border px-2 py-1 rounded" placeholder="Guruh" />
+                                <input name="operator" value={editData.operator} onChange={handleChange} className="border px-2 py-1 rounded" placeholder="Operator" />
+                                <input name="amount" type="number" value={editData.amount} onChange={handleChange} className="border px-2 py-1 rounded" placeholder="Summasi" />
+                                <select name="paymentType" value={editData.paymentType} onChange={handleChange} className="border px-2 py-1 rounded">
                                   <option value="naqt">Naqt</option>
                                   <option value="karta">Karta</option>
                                 </select>
-                                <button
-                                  onClick={handleSave}
-                                  className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition mt-2"
-                                >
-                                  Saqlash
-                                </button>
+                                <input name="date" type="date" value={editData.date} onChange={handleChange} className="border px-2 py-1 rounded" />
+
+                                <div className="flex justify-end gap-2 mt-2">
+                                  <button onClick={() => setEditPaymentId(null)} className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-600">Bekor qilish</button>
+                                  <button onClick={handleSave} className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">Saqlash</button>
+                                </div>
                               </>
                             )}
                           </div>
