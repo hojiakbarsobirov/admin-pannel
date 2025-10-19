@@ -112,13 +112,7 @@ const App = () => {
         {/* 👑 Admin sahifasi — faqat admin uchun */}
         <Route
           path="/admin-page"
-          element={
-            isLoggedIn && role === "admin" ? (
-              <AdminPage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
-          }
+          element={<AdminPage/>}
         />
 
         {/* 🧑‍💼 Menejer sahifasi — faqat menejer uchun */}

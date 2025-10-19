@@ -16,31 +16,28 @@ const Pages = () => {
 
   // 🔹 Umumiy menyular (barchada bo‘ladi)
   const commonLinks = [
-    { to: "/", label: "Leads" },
-    { to: "/feedback", label: "Qayta A'loqa" },
-    { to: "/deleted-users", label: "O‘chirilgan mijozlar" },
-    { to: "/finance", label: "Moliyaviy boshqaruv" },
-    { to: "/admin-page", label: "Admin Panel" },
+    { to: "/", label: "Leads", icon: <FaHome size={20} /> },
+    { to: "/feedback", label: "Qayta A'loqa", icon: <FaComments size={20} /> },
+    { to: "/deleted-users", label: "O‘chirilgan mijozlar", icon: <FaTrash size={20} /> },
+    { to: "/finance", label: "Moliyaviy boshqaruv", icon: <FaMoneyBillWave size={20} /> },
   ];
 
-  // 🔹 Faqat menejerda ko‘rinadigan sahifalar
-  const managerOnlyLinks = [
-    { to: "/statistika", label: "Statistika" },
-    { to: "/manager-page", label: "Menejer Sahifasi" },
+  // 🔹 Faqat menejer/admin uchun sahifalar
+  const roleLinks = [
+    { to: "/admin-page", label: "Admin", icon: <FaUserTie size={20} /> },
+    ...(userRole === "manager"
+      ? [
+          { to: "/statistika", label: "Statistika", icon: <FaChartPie size={20} /> },
+          { to: "/manager-page", label: "Menejer Sahifasi", icon: <FaUserTie size={20} /> },
+        ]
+      : []),
   ];
-
-  // 🔹 Agar menejer bo‘lsa — hammasini qo‘shamiz
-  // 🔹 Agar admin bo‘lsa — menejerga xoslarini qo‘shmaymiz
-  const links =
-    userRole === "manager"
-      ? [...commonLinks, ...managerOnlyLinks]
-      : commonLinks;
 
   return (
     <>
       {/* --- CHAP SIDEBAR (desktop uchun) --- */}
       <section className="hidden sm:flex flex-col justify-start items-start py-5 px-2 w-60">
-        {links.map((item) => (
+        {[...commonLinks, ...roleLinks].map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -59,94 +56,53 @@ const Pages = () => {
 
       {/* --- MOBIL PASTKI MENYU --- */}
       <nav className="sm:hidden fixed bottom-0 left-0 w-full bg-white border-t shadow-md flex justify-around items-center py-2 z-50">
-        {/* Home */}
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `flex flex-col items-center text-xs ${
-              isActive ? "text-blue-500" : "text-gray-500"
-            }`
-          }
-        >
-          <FaHome size={20} />
-          <span className="text-[10px]">Home</span>
-        </NavLink>
+        {/* Asosiy sahifalar */}
+        {commonLinks.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `flex flex-col items-center text-xs min-w-[50px] ${
+                isActive ? "text-blue-500" : "text-gray-500"
+              }`
+            }
+          >
+            {item.icon}
+            <span className="text-[10px]">{item.label}</span>
+          </NavLink>
+        ))}
 
-        {/* Feedback */}
-        <NavLink
-          to="/feedback"
-          className={({ isActive }) =>
-            `flex flex-col items-center text-xs ${
-              isActive ? "text-blue-500" : "text-gray-500"
-            }`
-          }
-        >
-          <FaComments size={20} />
-          <span className="text-[10px]">Feedback</span>
-        </NavLink>
+        {/* Menu tugmasi */}
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex flex-col items-center text-xs text-gray-500 min-w-[50px]"
+          >
+            <FaBars size={20} />
+            <span className="text-[10px]">Menu</span>
+          </button>
 
-        {/* Deleted */}
-        <NavLink
-          to="/deleted-users"
-          className={({ isActive }) =>
-            `flex flex-col items-center text-xs ${
-              isActive ? "text-blue-500" : "text-gray-500"
-            }`
-          }
-        >
-          <FaTrash size={20} />
-          <span className="text-[10px]">Deleted</span>
-        </NavLink>
-
-        {/* Finance */}
-        <NavLink
-          to="/finance"
-          className={({ isActive }) =>
-            `flex flex-col items-center text-xs ${
-              isActive ? "text-blue-500" : "text-gray-500"
-            }`
-          }
-        >
-          <FaMoneyBillWave size={20} />
-          <span className="text-[10px]">Finance</span>
-        </NavLink>
-
-        {/* --- Faqat manager uchun --- */}
-        {userRole === "manager" && (
-          <>
-            <NavLink
-              to="/statistika"
-              className={({ isActive }) =>
-                `flex flex-col items-center text-xs ${
-                  isActive ? "text-blue-500" : "text-gray-500"
-                }`
-              }
-            >
-              <FaChartPie size={20} />
-              <span className="text-[10px]">Statistika</span>
-            </NavLink>
-
-            <NavLink
-              to="/manager-page"
-              className={({ isActive }) =>
-                `flex flex-col items-center text-xs ${
-                  isActive ? "text-blue-500" : "text-gray-500"
-                }`
-              }
-            >
-              <FaUserTie size={20} />
-              <span className="text-[10px]">Manager</span>
-            </NavLink>
-          </>
-        )}
-
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="flex flex-col items-center text-xs text-gray-500"
-        >
-          <FaBars size={20} />
-          <span className="text-[10px]">Menu</span>
-        </button>
+          {/* Drop-down menyu (faqat manager/admin sahifalari) */}
+          {menuOpen && (
+            <div className="absolute bottom-12 right-0 bg-white border rounded shadow-lg w-44 py-2 z-50">
+              {roleLinks.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-4 py-2 text-sm transition hover:bg-blue-500 hover:text-white ${
+                      isActive ? "bg-blue-500 text-white" : "text-gray-700"
+                    }`
+                  }
+                >
+                  {item.icon}
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
     </>
   );

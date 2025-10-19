@@ -17,7 +17,6 @@ const FeedBackPage = () => {
     operator: "",
     amount: "",
     paymentType: "naqt",
-    receipt: null,
   });
   const navigate = useNavigate();
 
@@ -58,25 +57,18 @@ const FeedBackPage = () => {
 
   // 🔹 Payment modal input handler
   const handlePaymentChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "receipt") {
-      setPaymentData({ ...paymentData, [name]: files[0] });
-    } else {
-      setPaymentData({ ...paymentData, [name]: value });
-    }
+    const { name, value } = e.target;
+    setPaymentData({ ...paymentData, [name]: value });
   };
 
   const handlePaymentSubmit = async () => {
     try {
-      const paymentObj = { ...paymentData };
-      if (paymentObj.receipt && typeof paymentObj.receipt !== "string") {
-        paymentObj.receipt = paymentObj.receipt.name;
-      }
       await addDoc(collection(db, "payments"), {
-        ...paymentObj,
+        ...paymentData,
         createdAt: new Date().toISOString(),
       });
-      setShowPaymentModal(false);
+
+      // Payment yuborilgach ma'lumotlarni tozalash
       setPaymentData({
         name: "",
         phone: "",
@@ -85,9 +77,11 @@ const FeedBackPage = () => {
         operator: "",
         amount: "",
         paymentType: "naqt",
-        receipt: null,
       });
-      alert("✅ To‘lov ma’lumotlari yuborildi!");
+      setShowPaymentModal(false);
+
+      // /finance sahifasiga o'tish
+      navigate("/finance");
     } catch (error) {
       console.error(error);
       alert("❌ Ma’lumotlarni yuborishda xatolik yuz berdi!");
@@ -109,8 +103,8 @@ const FeedBackPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-2">
-      <h2 className="text-xl sm:text-3xl font-bold text-blue-500 mb-5 text-center">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0">
+      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center">
         📞 Qayta aloqa foydalanuvchilari
       </h2>
 
@@ -158,7 +152,6 @@ const FeedBackPage = () => {
                             operator: "",
                             amount: "",
                             paymentType: "naqt",
-                            receipt: null,
                           });
                           setShowPaymentModal(true);
                         }}
@@ -170,7 +163,7 @@ const FeedBackPage = () => {
                       {/* 🗑 O‘chirish tugmasi */}
                       <button
                         onClick={() => setSelectedUser(user)}
-                        className="px-2 py-1  text-white rounded hover:scale-125 transition"
+                        className="px-2 py-1 text-white rounded hover:scale-125 transition"
                       >
                         🗑
                       </button>
@@ -184,7 +177,7 @@ const FeedBackPage = () => {
       </div>
 
       {/* 🔹 O‘chirish modal */}
-      {selectedUser && (
+      {selectedUser && !showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white rounded-2xl p-6 w-[90%] sm:w-[400px] shadow-lg text-center">
             <h3 className="text-lg font-semibold mb-3 text-red-600">
@@ -233,7 +226,6 @@ const FeedBackPage = () => {
                 <option value="naqt">Naqt</option>
                 <option value="karta">Karta</option>
               </select>
-              <input type="file" name="receipt" onChange={handlePaymentChange} className="border px-2 py-1 rounded w-full"/>
               <div className="flex justify-end gap-2 mt-2">
                 <button onClick={() => setShowPaymentModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
                 <button onClick={handlePaymentSubmit} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">Yuborish</button>

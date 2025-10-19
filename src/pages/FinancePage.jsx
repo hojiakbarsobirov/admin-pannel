@@ -1,6 +1,13 @@
+// FinancePage.jsx
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
 
 const FinancePage = () => {
   const [payments, setPayments] = useState([]);
@@ -8,6 +15,12 @@ const FinancePage = () => {
   const [editPaymentId, setEditPaymentId] = useState(null);
   const [editData, setEditData] = useState({});
   const [expandedRow, setExpandedRow] = useState(null);
+
+  // 🔹 Raqamni formatlash funksiyasi
+  const formatNumber = (num) => {
+    if (!num) return "-";
+    return Number(num).toLocaleString("uz-UZ"); // 1.000.000 ko‘rinishda
+  };
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -31,31 +44,54 @@ const FinancePage = () => {
 
   const handleEditClick = (payment) => {
     setEditPaymentId(payment.id);
-    setEditData({ ...payment });
+    setEditData({
+      name: payment.name || "",
+      phone: payment.phone || "",
+      tarif: payment.tarif || "",
+      groupName: payment.groupName || "",
+      operator: payment.operator || "",
+      amount: payment.amount || "",
+      paymentType: payment.paymentType || "naqt",
+    });
+    setExpandedRow(payment.id);
   };
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "receipt") {
-      setEditData({ ...editData, [name]: files[0] });
-    } else {
-      setEditData({ ...editData, [name]: value });
-    }
+    const { name, value } = e.target;
+    setEditData({ ...editData, [name]: value });
   };
 
   const handleSave = async () => {
-    try {
-      const docRef = doc(db, "payments", editPaymentId);
-      const updateObj = { ...editData };
+    if (!editPaymentId) return;
 
-      if (updateObj.receipt && typeof updateObj.receipt !== "string") {
-        updateObj.receipt = updateObj.receipt.name;
+    const docRef = doc(db, "payments", editPaymentId);
+
+    try {
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        alert("❌ Ushbu hujjat mavjud emas!");
+        setEditPaymentId(null);
+        setExpandedRow(null);
+        setEditData({});
+        fetchPayments();
+        return;
       }
 
-      await updateDoc(docRef, updateObj);
-      setEditPaymentId(null);
-      fetchPayments();
+      await updateDoc(docRef, {
+        name: editData.name || "",
+        phone: editData.phone || "",
+        tarif: editData.tarif || "",
+        groupName: editData.groupName || "",
+        operator: editData.operator || "",
+        amount: editData.amount || "",
+        paymentType: editData.paymentType || "naqt",
+      });
+
       alert("✅ Ma’lumotlar yangilandi!");
+      setEditPaymentId(null);
+      setExpandedRow(null);
+      setEditData({});
+      fetchPayments();
     } catch (error) {
       console.error(error);
       alert("❌ Yangilashda muammo yuz berdi!");
@@ -63,13 +99,19 @@ const FinancePage = () => {
   };
 
   return (
-    <section className="p-0 min-h-screen bg-gray-50">
-      <h1 className="text-4xl font-bold text-center text-blue-500 mb-4">💰 Moliyaviy Hisobot</h1>
+    <section className="p-0 py-2 min-h-screen bg-gray-50">
+      <h1 className="text-4xl font-bold text-center text-blue-500 mb-4">
+        💰 Moliyaviy Hisobot
+      </h1>
 
       {loading ? (
-        <p className="text-gray-700">⏳ Ma’lumotlar yuklanmoqda...</p>
+        <p className="text-gray-700 text-center">
+          ⏳ Ma’lumotlar yuklanmoqda...
+        </p>
       ) : payments.length === 0 ? (
-        <p className="text-gray-700">Hech qanday to‘lov ma’lumotlari topilmadi.</p>
+        <p className="text-gray-700 text-center">
+          Hech qanday to‘lov ma’lumotlari topilmadi.
+        </p>
       ) : (
         <div className="overflow-x-auto rounded">
           <table className="min-w-full text-left border-collapse text-sm sm:text-base">
@@ -86,7 +128,9 @@ const FinancePage = () => {
               {payments.map((p, index) => (
                 <React.Fragment key={p.id}>
                   <tr
-                    className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} border-b cursor-pointer`}
+                    className={`${
+                      index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                    } border-b cursor-pointer`}
                     onClick={() =>
                       setExpandedRow(expandedRow === p.id ? null : p.id)
                     }
@@ -94,8 +138,9 @@ const FinancePage = () => {
                     <td className="py-2 px-3">{index + 1}</td>
                     <td className="py-2 px-3">{p.name}</td>
                     <td className="py-2 px-3">{p.phone}</td>
-                    <td className="py-2 px-3">{p.amount}</td>
-                    <td className="py-2 px-3 space-x-2">
+                    {/* 🔹 Formatlangan summa */}
+                    <td className="py-2 px-3">{formatNumber(p.amount)}</td>
+                    <td className="py-2 px-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -108,93 +153,108 @@ const FinancePage = () => {
                     </td>
                   </tr>
 
-                  {/* Expanded row */}
-                  <tr className="transition-all duration-500">
+                  <tr>
                     <td colSpan={5} className="p-0">
                       <div
-                        className={`overflow-hidden transition-all duration-500 ${
-                          expandedRow === p.id ? "max-h-[500px] p-4" : "max-h-0"
+                        className={`overflow-hidden transition-all duration-500 bg-gray-50 border-b ${
+                          expandedRow === p.id ? "max-h-[600px] p-4" : "max-h-0"
                         }`}
                       >
                         {expandedRow === p.id && (
-                          editPaymentId === p.id ? (
-                            <div className="grid gap-2">
-                              <input
-                                type="text"
-                                name="name"
-                                value={editData.name || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              />
-                              <input
-                                type="text"
-                                name="phone"
-                                value={editData.phone || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              />
-                              <select
-                                name="tarif"
-                                value={editData.tarif || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              >
-                                <option value="">Tanlang</option>
-                                <option value="razgovor">Razgovor</option>
-                                <option value="premium">Premium</option>
-                              </select>
-                              <input
-                                type="text"
-                                name="groupName"
-                                value={editData.groupName || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              />
-                              <input
-                                type="text"
-                                name="operator"
-                                value={editData.operator || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              />
-                              <input
-                                type="number"
-                                name="amount"
-                                value={editData.amount || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              />
-                              <select
-                                name="paymentType"
-                                value={editData.paymentType || ""}
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              >
-                                <option value="naqt">Naqt</option>
-                                <option value="karta">Karta</option>
-                              </select>
-                              <input
-                                type="file"
-                                name="receipt"
-                                onChange={handleChange}
-                                className="border px-2 py-1 rounded w-full"
-                              />
-                              <button
-                                onClick={handleSave}
-                                className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition mt-2"
-                              >
-                                Saqlash
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="text-gray-700 grid gap-1">
-                              <p><strong>Tarif:</strong> {p.tarif}</p>
-                              <p><strong>Guruh:</strong> {p.groupName}</p>
-                              <p><strong>Operator:</strong> {p.operator}</p>
-                              <p><strong>To‘lov turi:</strong> {p.paymentType}</p>
-                              <p><strong>Chek:</strong> {p.receipt || "-"}</p>
-                            </div>
-                          )
+                          <div className="grid gap-2">
+                            {editPaymentId !== p.id ? (
+                              <>
+                                <p>
+                                  <strong>Ism:</strong> {p.name}
+                                </p>
+                                <p>
+                                  <strong>Telefon:</strong> {p.phone}
+                                </p>
+                                <p>
+                                  <strong>Tarif:</strong> {p.tarif}
+                                </p>
+                                <p>
+                                  <strong>Guruh:</strong> {p.groupName}
+                                </p>
+                                <p>
+                                  <strong>Operator:</strong> {p.operator}
+                                </p>
+                                <p>
+                                  <strong>Summasi:</strong>{" "}
+                                  {formatNumber(p.amount)}
+                                </p>
+                                <p>
+                                  <strong>To‘lov turi:</strong> {p.paymentType}
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <input
+                                  type="text"
+                                  name="name"
+                                  value={editData.name || ""}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                  placeholder="Ism"
+                                />
+                                <input
+                                  type="text"
+                                  name="phone"
+                                  value={editData.phone || ""}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                  placeholder="Telefon"
+                                />
+                                <input
+                                  type="text"
+                                  name="tarif"
+                                  value={editData.tarif || ""}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                  placeholder="Tarif"
+                                />
+                                <input
+                                  type="text"
+                                  name="groupName"
+                                  value={editData.groupName || ""}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                  placeholder="Guruh"
+                                />
+                                <input
+                                  type="text"
+                                  name="operator"
+                                  value={editData.operator || ""}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                  placeholder="Operator"
+                                />
+                                <input
+                                  type="number"
+                                  name="amount"
+                                  value={editData.amount || ""}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                  placeholder="Summasi"
+                                />
+                                <select
+                                  name="paymentType"
+                                  value={editData.paymentType || "naqt"}
+                                  onChange={handleChange}
+                                  className="border px-2 py-1 rounded w-full"
+                                >
+                                  <option value="naqt">Naqt</option>
+                                  <option value="karta">Karta</option>
+                                </select>
+                                <button
+                                  onClick={handleSave}
+                                  className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition mt-2"
+                                >
+                                  Saqlash
+                                </button>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>

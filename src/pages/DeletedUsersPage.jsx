@@ -77,7 +77,7 @@ const DeletedUsersPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-0 sm:px-2">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0 sm:px-0">
       <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-2 text-center">
         🗑 O‘chirilgan foydalanuvchilar
       </h2>

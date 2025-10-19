@@ -109,7 +109,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-6 px-0 sm:px-2">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0 sm:px-0">
       <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center">
         📋 Ro‘yxatdan o‘tgan foydalanuvchilar
       </h2>
@@ -158,7 +158,7 @@ const HomePage = () => {
                     <td className="py-2 px-4 text-center space-x-2 flex justify-center">
                       <button onClick={() => openFeedbackModal(user)} className="px-2 py-1 text-white rounded hover:scale-125 transition">📞</button>
                       <button onClick={() => openDeleteModal(user)} className="px-2 py-1 text-white rounded hover:scale-125 transition">🗑</button>
-                      <button onClick={() => openPaymentModal(user)} className="px-2 py-1 text-black border-[1px] border-black rounded hover:scale-110 transition">100% 💰</button>
+                      <button onClick={() => openPaymentModal(user)} className="px-2 py-1 text-white hover:bg-green-600 bg-green-500 rounded hover:scale-110 transition">100% 💰</button>
                     </td>
                   </tr>
                 ))}
