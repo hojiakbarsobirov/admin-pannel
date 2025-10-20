@@ -16,19 +16,54 @@ const Pages = () => {
 
   // 🔹 Umumiy menyular (barchada bo‘ladi)
   const commonLinks = [
-    { to: "/", label: "Leads", icon: <FaHome size={20} /> },
-    { to: "/feedback", label: "Qayta A'loqa", icon: <FaComments size={20} /> },
-    { to: "/deleted-users", label: "O‘chirilgan mijozlar", icon: <FaTrash size={20} /> },
-    { to: "/finance", label: "Moliyaviy boshqaruv", icon: <FaMoneyBillWave size={20} /> },
+    {
+      to: "/",
+      label: "Leads",
+      labelEn: "Leads",
+      icon: <FaHome size={20} />,
+    },
+    {
+      to: "/feedback",
+      label: "Qayta A'loqa",
+      labelEn: "Feedback",
+      icon: <FaComments size={20} />,
+    },
+    {
+      to: "/deleted-users",
+      label: "O‘chirilgan mijozlar",
+      labelEn: "Deleted",
+      icon: <FaTrash size={20} />,
+    },
+    {
+      to: "/finance",
+      label: "Moliyaviy boshqaruv",
+      labelEn: "Finance",
+      icon: <FaMoneyBillWave size={20} />,
+    },
   ];
 
   // 🔹 Faqat menejer/admin uchun sahifalar
   const roleLinks = [
-    { to: "/admin-page", label: "Admin", icon: <FaUserTie size={20} /> },
+    {
+      to: "/admin-page",
+      label: "Admin",
+      labelEn: "Admin",
+      icon: <FaUserTie size={20} />,
+    },
     ...(userRole === "manager"
       ? [
-          { to: "/statistika", label: "Statistika", icon: <FaChartPie size={20} /> },
-          { to: "/manager-page", label: "Menejer Sahifasi", icon: <FaUserTie size={20} /> },
+          {
+            to: "/statistika",
+            label: "Statistika",
+            labelEn: "Statistics",
+            icon: <FaChartPie size={20} />,
+          },
+          {
+            to: "/manager-page",
+            label: "Menejer Sahifasi",
+            labelEn: "Manager Page",
+            icon: <FaUserTie size={20} />,
+          },
         ]
       : []),
   ];
@@ -68,7 +103,7 @@ const Pages = () => {
             }
           >
             {item.icon}
-            <span className="text-[10px]">{item.label}</span>
+            <span className="text-[10px]">{item.labelEn}</span>
           </NavLink>
         ))}
 
@@ -97,7 +132,7 @@ const Pages = () => {
                   }
                 >
                   {item.icon}
-                  {item.label}
+                  {item.labelEn}
                 </NavLink>
               ))}
             </div>
