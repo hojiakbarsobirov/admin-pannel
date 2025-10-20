@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -13,26 +12,34 @@ const LoginPage = ({ setIsLoggedIn }) => {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // 🔹 Admin login
-    if (login === "admin" && password === "admin123") {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("role", "admin");
-      setIsLoggedIn(true);
-      navigate("/");
-    }
-
     // 🔹 Menejer login
-    else if (login === "Boss123" && password === "Bigboss123") {
+    if (login === "Boss123" && password === "Bigboss123") {
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("role", "manager");
+      localStorage.removeItem("currentAdmin"); // eski admin saqlanmasin
       setIsLoggedIn(true);
-      navigate("/");
+      navigate("/admin-page");
+      return;
     }
 
-    // ❌ Noto‘g‘ri login
-    else {
-      setError("❌ Login yoki parol noto‘g‘ri");
+    // 🔹 Menejer tomonidan yaratilgan adminlar ro‘yxatini olish
+    const savedAdmins = JSON.parse(localStorage.getItem("admins")) || [];
+    const foundAdmin = savedAdmins.find(
+      (a) => a.login === login && a.password === password
+    );
+
+    // 🔹 Agar admin topilsa
+    if (foundAdmin) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("role", "admin");
+      localStorage.setItem("currentAdmin", foundAdmin.login);
+      setIsLoggedIn(true);
+      navigate("/admin-page");
+      return;
     }
+
+    // ❌ Agar hech biri to‘g‘ri bo‘lmasa
+    setError("❌ Login yoki parol noto‘g‘ri");
   };
 
   return (
@@ -43,14 +50,18 @@ const LoginPage = ({ setIsLoggedIn }) => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-[400px] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl p-6 text-center"
       >
+        {/* Header */}
         <div className="flex flex-col items-center mb-6">
           <div className="bg-gradient-to-br from-blue-500 to-indigo-500 text-white w-14 h-14 flex items-center justify-center rounded-2xl shadow-lg mb-3">
             <FaUserShield size={28} />
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-wide">Tizimga kirish</h2>
+          <h2 className="text-2xl font-bold text-white tracking-wide">
+            Tizimga kirish
+          </h2>
           <p className="text-gray-300 text-sm mt-2">Login va parolni kiriting</p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="relative">
             <FaUserShield className="absolute top-3.5 left-3 text-blue-400 text-lg" />
@@ -86,6 +97,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
           </motion.button>
         </form>
 
+        {/* Footer */}
         <div className="mt-6 text-gray-300 text-xs">
           © 2025 <span className="text-white font-semibold">AdminPanel.uz</span>
         </div>

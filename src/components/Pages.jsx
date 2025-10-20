@@ -30,7 +30,7 @@ const Pages = () => {
     },
     {
       to: "/deleted-users",
-      label: "O‘chirilgan mijozlar",
+      label: "O'chirilgan mijozlar",
       labelEn: "Deleted",
       icon: <FaTrash size={20} />,
     },
