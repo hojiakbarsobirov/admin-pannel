@@ -12,16 +12,12 @@ import {
 
 const Pages = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(true); // 🔹 Desktop menyu holati
   const userRole = localStorage.getItem("role"); // "admin" yoki "manager"
 
   // 🔹 Umumiy menyular (barchada bo‘ladi)
   const commonLinks = [
-    {
-      to: "/",
-      label: "Leads",
-      labelEn: "Leads",
-      icon: <FaHome size={20} />,
-    },
+    { to: "/", label: "Leads", labelEn: "Leads", icon: <FaHome size={20} /> },
     {
       to: "/feedback",
       label: "Qayta A'loqa",
@@ -71,20 +67,34 @@ const Pages = () => {
   return (
     <>
       {/* --- CHAP SIDEBAR (desktop uchun) --- */}
-      <section className="hidden sm:flex flex-col justify-start items-start py-5 px-2 w-60">
+      <section
+        className={`hidden sm:flex flex-col justify-start py-5 px-2 bg-white border-r transition-all duration-300 ${
+          desktopMenuOpen ? "w-60" : "w-16"
+        }`}
+      >
+        {/* 🔘 Menyu tugmasi */}
+        <button
+          onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
+          className="flex items-center gap-2 mb-4 px-2 text-gray-700 hover:text-blue-500 transition"
+        >
+          <FaBars size={20} />
+          {desktopMenuOpen && <span className="text-sm font-medium">Menyu</span>}
+        </button>
+
         {[...commonLinks, ...roleLinks].map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `w-full h-10 flex items-center px-2 rounded-md border-b transition ${
+              `w-full h-10 flex items-center gap-3 px-2 rounded-md border-b transition ${
                 isActive
                   ? "bg-blue-500 text-white"
                   : "hover:bg-blue-500 hover:text-white"
               }`
             }
           >
-            <h4 className="text-sm">{item.label}</h4>
+            {item.icon}
+            {desktopMenuOpen && <h4 className="text-sm">{item.label}</h4>}
           </NavLink>
         ))}
       </section>
