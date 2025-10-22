@@ -1,3 +1,4 @@
+// src/pages/AdminPage.jsx
 import React, { useEffect, useState } from "react";
 import {
   FaPlus,
@@ -9,6 +10,15 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "../firebase";
 
 const AdminPage = () => {
   const [profiles, setProfiles] = useState([]);
@@ -29,64 +39,49 @@ const AdminPage = () => {
   });
   const [editPasswordVisible, setEditPasswordVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteIndex, setDeleteIndex] = useState(null);
+  const [deleteDocId, setDeleteDocId] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const userRole = localStorage.getItem("role");
 
-  // 🔹 Ma'lumotlarni localStorage'dan yuklash
-  useEffect(() => {
-    if (userRole !== "manager") return; // 🔸 Faqat menejer uchun yuklanadi
-    const savedAdmins = JSON.parse(localStorage.getItem("admins")) || [];
-    const savedTeachers = JSON.parse(localStorage.getItem("teachers")) || [];
+  // 🔹 Firestore’dan ma’lumotlarni olish
+  const fetchProfiles = async () => {
+    try {
+      const adminsSnap = await getDocs(collection(db, "admins"));
+      const teachersSnap = await getDocs(collection(db, "teachers"));
 
-    const combined = [
-      ...savedAdmins.map((a) => ({ ...a, role: "admin" })),
-      ...savedTeachers.map((t) => ({ ...t, role: "teacher" })),
-    ];
+      const admins = adminsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), role: "admin" }));
+      const teachers = teachersSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), role: "teacher" }));
 
-    setProfiles(combined);
-  }, [userRole]);
-
-  // 🔹 O‘zgartirilgan profillarni saqlash
-  const saveProfiles = (updatedProfiles) => {
-    setProfiles(updatedProfiles);
-    const admins = updatedProfiles.filter((p) => p.role === "admin");
-    const teachers = updatedProfiles.filter((p) => p.role === "teacher");
-    localStorage.setItem("admins", JSON.stringify(admins));
-    localStorage.setItem("teachers", JSON.stringify(teachers));
+      setProfiles([...admins, ...teachers]);
+    } catch (error) {
+      console.error("❌ Ma’lumotlarni olishda xatolik:", error);
+    }
   };
 
-  // 🔹 Yangi profil saqlash
-  const handleSave = () => {
-    if (
-      !newProfile.name ||
-      !newProfile.phone ||
-      !newProfile.login ||
-      !newProfile.password
-    ) {
+  useEffect(() => {
+    if (userRole === "manager") fetchProfiles();
+  }, [userRole]);
+
+  // 🔹 Yangi profil qo‘shish
+  const handleSave = async () => {
+    const { name, phone, login, password } = newProfile;
+    if (!name || !phone || !login || !password) {
       alert("Barcha maydonlarni to‘ldiring!");
       return;
     }
 
-    // login mavjudligini tekshirish
-    const allProfiles = JSON.parse(localStorage.getItem("admins")) || [];
-    const allTeachers = JSON.parse(localStorage.getItem("teachers")) || [];
-    const exists = [...allProfiles, ...allTeachers].find(
-      (p) => p.login === newProfile.login
-    );
-
-    if (exists) {
-      alert("Bu login allaqachon mavjud!");
-      return;
+    try {
+      const collectionName = roleType === "admin" ? "admins" : "teachers";
+      await addDoc(collection(db, collectionName), { name, phone, login, password });
+      setShowModal(false);
+      setNewProfile({ name: "", phone: "", login: "", password: "" });
+      fetchProfiles();
+    } catch (error) {
+      console.error("❌ Profilni saqlashda xatolik:", error);
     }
-
-    const updated = [...profiles, { ...newProfile, role: roleType }];
-    saveProfiles(updated);
-    setNewProfile({ name: "", phone: "", login: "", password: "" });
-    setShowModal(false);
   };
 
-  // 🔹 Profilni tahrirlash
+  // 🔹 Profilni tahrirlash uchun ochish
   const handleEdit = (index) => {
     const prof = profiles[index];
     setEditData({ ...prof });
@@ -96,33 +91,42 @@ const AdminPage = () => {
     setShowModal(true);
   };
 
-  // 🔹 Tahrirni saqlash
-  const handleSaveEdit = () => {
-    const { name, phone, login, password } = editData;
+  // 🔹 Tahrirlangan profilni saqlash
+  const handleSaveEdit = async () => {
+    const { id, name, phone, login, password } = editData;
     if (!name || !phone || !login || !password) {
       alert("Barcha maydonlarni to‘ldiring!");
       return;
     }
 
-    const updated = [...profiles];
-    updated[editIndex] = { ...editData, role: roleType };
-    saveProfiles(updated);
-    setEditIndex(null);
-    setShowModal(false);
+    try {
+      const collectionName = roleType === "admin" ? "admins" : "teachers";
+      const ref = doc(db, collectionName, id);
+      await updateDoc(ref, { name, phone, login, password });
+      setShowModal(false);
+      setEditIndex(null);
+      fetchProfiles();
+    } catch (error) {
+      console.error("❌ Profilni yangilashda xatolik:", error);
+    }
   };
 
-  // 🔹 O‘chirish
-  const confirmDelete = (index) => {
-    setDeleteIndex(index);
+  // 🔹 Profilni o‘chirish
+  const confirmDelete = (id) => {
+    setDeleteDocId(id);
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirmed = () => {
-    if (deleteIndex === null) return;
-    const updated = profiles.filter((_, i) => i !== deleteIndex);
-    saveProfiles(updated);
-    setDeleteIndex(null);
-    setShowDeleteModal(false);
+  const handleDeleteConfirmed = async () => {
+    try {
+      const profile = profiles.find((p) => p.id === deleteDocId);
+      const collectionName = profile.role === "admin" ? "admins" : "teachers";
+      await deleteDoc(doc(db, collectionName, deleteDocId));
+      setShowDeleteModal(false);
+      fetchProfiles();
+    } catch (error) {
+      console.error("❌ Profilni o‘chirishda xatolik:", error);
+    }
   };
 
   const onModalSave = () => {
@@ -134,7 +138,6 @@ const AdminPage = () => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  // 🔹 Agar foydalanuvchi menejer bo‘lmasa, ma’lumotlar ko‘rsatilmaydi
   if (userRole !== "manager") {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -155,24 +158,21 @@ const AdminPage = () => {
           <FaUserShield className="text-blue-500" /> Profil boshqaruvi
         </h1>
 
-        {userRole === "manager" && (
-          <button
-            onClick={() => {
-              setEditIndex(null);
-              setNewProfile({ name: "", phone: "", login: "", password: "" });
-              setRoleType("admin");
-              setShowModal(true);
-            }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 sm:px-5 py-2 rounded-xl shadow hover:bg-blue-700 transition w-full sm:w-auto justify-center"
-          >
-            <FaPlus /> Yangi profil
-          </button>
-        )}
+        <button
+          onClick={() => {
+            setEditIndex(null);
+            setNewProfile({ name: "", phone: "", login: "", password: "" });
+            setRoleType("admin");
+            setShowModal(true);
+          }}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 sm:px-5 py-2 rounded-xl shadow hover:bg-blue-700 transition w-full sm:w-auto justify-center"
+        >
+          <FaPlus /> Yangi profil
+        </button>
       </div>
 
-      {/* 🔹 Adminlar alohida, o‘qituvchilar alohida */}
+      {/* 🔹 Adminlar */}
       <div className="grid gap-6">
-        {/* Adminlar bo‘limi */}
         <div>
           <h2 className="text-xl font-semibold text-blue-600 mb-3 flex items-center gap-2">
             <FaUserShield /> Adminlar
@@ -182,10 +182,10 @@ const AdminPage = () => {
               <p className="text-gray-500 text-sm italic">Adminlar yo‘q</p>
             ) : (
               profiles
-                .filter((p) => p.role === "admin")
+                .filter(p => p.role === "admin")
                 .map((prof, index) => (
                   <motion.div
-                    key={index}
+                    key={prof.id}
                     layout
                     className="bg-white rounded-xl p-4 border-l-4 border-blue-400 shadow hover:shadow-md cursor-pointer"
                     onClick={() => toggleExpand(index)}
@@ -207,35 +207,33 @@ const AdminPage = () => {
                       </div>
                     )}
 
-                    {userRole === "manager" && (
-                      <div className="mt-3 flex justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(index);
-                          }}
-                          className="p-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmDelete(index);
-                          }}
-                          className="p-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    )}
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(index);
+                        }}
+                        className="p-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmDelete(prof.id);
+                        }}
+                        className="p-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </motion.div>
                 ))
             )}
           </div>
         </div>
 
-        {/* O‘qituvchilar bo‘limi */}
+        {/* 🔹 Teacherlar */}
         <div>
           <h2 className="text-xl font-semibold text-green-600 mb-3 flex items-center gap-2">
             <FaChalkboardTeacher /> O‘qituvchilar
@@ -245,10 +243,10 @@ const AdminPage = () => {
               <p className="text-gray-500 text-sm italic">O‘qituvchilar yo‘q</p>
             ) : (
               profiles
-                .filter((p) => p.role === "teacher")
+                .filter(p => p.role === "teacher")
                 .map((prof, index) => (
                   <motion.div
-                    key={index}
+                    key={prof.id}
                     layout
                     className="bg-white rounded-xl p-4 border-l-4 border-green-400 shadow hover:shadow-md cursor-pointer"
                     onClick={() => toggleExpand(index)}
@@ -270,28 +268,26 @@ const AdminPage = () => {
                       </div>
                     )}
 
-                    {userRole === "manager" && (
-                      <div className="mt-3 flex justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(index);
-                          }}
-                          className="p-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmDelete(index);
-                          }}
-                          className="p-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    )}
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(index);
+                        }}
+                        className="p-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmDelete(prof.id);
+                        }}
+                        className="p-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </motion.div>
                 ))
             )}

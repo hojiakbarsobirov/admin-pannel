@@ -15,10 +15,10 @@ import {
 
 const Pages = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [desktopMenuOpen, setDesktopMenuOpen] = useState(true); // 🔹 Desktop menyu holati
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(true);
   const userRole = localStorage.getItem("role"); // "admin", "manager", yoki "teacher"
 
-  // 🔹 Umumiy menyular (barchada bo‘ladi)
+  // 🔹 Barcha foydalanuvchilar uchun umumiy sahifalar
   const commonLinks = [
     { to: "/", label: "Leads", labelEn: "Leads", icon: <FaHome size={20} /> },
     {
@@ -41,7 +41,7 @@ const Pages = () => {
     },
   ];
 
-  // 🔹 Faqat menejer, admin yoki teacher uchun sahifalar
+  // 🔹 Foydalanuvchi roliga qarab qo‘shimcha sahifalar
   let roleLinks = [];
 
   if (userRole === "manager") {
@@ -50,56 +50,52 @@ const Pages = () => {
         to: "/admin-page",
         label: "Admin",
         labelEn: "Admin",
-        icon: <FaUserTie size={20} />, // Admin icon
+        icon: <FaUserTie size={20} />, // faqat menejerga ko'rinadi
       },
       {
         to: "/statistika",
         label: "Statistika",
         labelEn: "Statistics",
-        icon: <FaChartPie size={20} />, // Statistika icon
+        icon: <FaChartPie size={20} />,
       },
       {
         to: "/manager-page",
         label: "Menejer Sahifasi",
         labelEn: "Manager Page",
-        icon: <FaUsers size={20} />, // Menejer icon
+        icon: <FaUsers size={20} />,
       },
-      {
-        to: "/teachers",
-        label: "O‘qituvchilar",
-        labelEn: "Teachers",
-        icon: <FaChalkboardTeacher size={20} />, // Teacher icon
-      },
-      // 🔹 Yangi sahifa: Guruh yaratish
       {
         to: "/create-group",
         label: "Guruh yaratish",
         labelEn: "Create Group",
-        icon: <FaLayerGroup size={20} />, // Guruh icon
+        icon: <FaLayerGroup size={20} />,
       },
     ];
   } else if (userRole === "admin") {
+    // 🔸 Adminlar endi admin sahifasini KO‘RISHMAYDI
+    // 🔸 Teachers sahifasi ham yo‘q
     roleLinks = [
-      {
-        to: "/admin-page",
-        label: "Admin Sahifasi",
-        labelEn: "Admin Page",
-        icon: <FaUserTie size={20} />, // Admin icon
-      },
       {
         to: "/create-group",
         label: "Guruh yaratish",
         labelEn: "Create Group",
-        icon: <FaLayerGroup size={20} />, // Guruh icon
+        icon: <FaLayerGroup size={20} />,
+      },
+      {
+        to: "/statistika",
+        label: "Statistika",
+        labelEn: "Statistics",
+        icon: <FaChartPie size={20} />,
       },
     ];
   } else if (userRole === "teacher") {
+    // 🔸 Teacher uchun faqat o‘qituvchilar sahifasi
     roleLinks = [
       {
         to: "/teachers",
         label: "O‘qituvchilar",
         labelEn: "Teachers",
-        icon: <FaChalkboardTeacher size={20} />, // Teacher icon
+        icon: <FaChalkboardTeacher size={20} />,
       },
     ];
   }
@@ -121,7 +117,7 @@ const Pages = () => {
           {desktopMenuOpen && <span className="text-sm font-medium">Menyu</span>}
         </button>
 
-        {/* 🔹 Teacher uchun faqat Teachers sahifasi ko‘rsatiladi */}
+        {/* 🔹 Teacher uchun faqat o‘zining sahifasi */}
         {userRole === "teacher"
           ? roleLinks.map((item) => (
               <NavLink

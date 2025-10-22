@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Layout from "./components/Layout/Layout";
@@ -13,7 +12,8 @@ import FinancePage from "./pages/FinancePage";
 import LoginPage from "./pages/LoginPage";
 import TeacherPage from "./pages/TeacherPage";
 import CreateGroupPage from "./pages/CreateGroupPage";
-import StudentsPage from "./pages/StudentsPage"; // 🔹 Import qilindi
+import StudentsPage from "./pages/CreateGroup";
+import SingleStudentsPage from "./pages/SingleStudentsPage"; // 🔹 Yangi sahifa import qilindi
 
 const App = () => {
   const navigate = useNavigate();
@@ -43,70 +43,152 @@ const App = () => {
 
       {/* 🔧 Asosiy Layout */}
       <Route element={<Layout setIsLoggedIn={setIsLoggedIn} />}>
-        {/* 🏠 HomePage */}
         <Route
           path="/"
-          element={isLoggedIn ? <HomePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn ? (
+              <HomePage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* All users */}
         <Route
           path="/all-users"
-          element={isLoggedIn ? <AllUsersPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn ? (
+              <AllUsersPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Deleted users */}
         <Route
           path="/deleted-users"
-          element={isLoggedIn ? <DeletedUsersPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn ? (
+              <DeletedUsersPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Feedback */}
         <Route
           path="/feedback"
-          element={isLoggedIn ? <FeedBackPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn ? (
+              <FeedBackPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Statistika — faqat manager */}
         <Route
           path="/statistika"
-          element={isLoggedIn && role === "manager" ? <StatistikaPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn && role === "manager" ? (
+              <StatistikaPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Finance — admin va manager */}
         <Route
           path="/finance"
-          element={isLoggedIn && (role === "admin" || role === "manager") ? <FinancePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn && (role === "admin" || role === "manager") ? (
+              <FinancePage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Admin Page */}
         <Route
           path="/admin-page"
-          element={isLoggedIn ? <AdminPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn ? (
+              <AdminPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Manager Page */}
         <Route
           path="/manager-page"
-          element={isLoggedIn && role === "manager" ? <ManagerPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn && role === "manager" ? (
+              <ManagerPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* Teachers Page */}
+        {/* 🔹 O‘qituvchi sahifasi */}
         <Route
           path="/teachers"
-          element={isLoggedIn ? <TeacherPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn && role === "teacher" ? (
+              <TeacherPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* 🔹 CreateGroupPage — faqat admin va manager */}
+        {/* 🔹 Guruh yaratish sahifasi */}
         <Route
           path="/create-group"
-          element={isLoggedIn && (role === "admin" || role === "manager") ? <CreateGroupPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          element={
+            isLoggedIn && (role === "admin" || role === "manager") ? (
+              <CreateGroupPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
 
-        {/* 🔹 StudentsPage — faqat admin va manager */}
+        {/* ✅ O‘qituvchi uchun guruhlar sahifasi */}
         <Route
-          path="/students/:groupId"
-          element={isLoggedIn && (role === "admin" || role === "manager") ? <StudentsPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          path="/teacher/:teacherId"
+          element={
+            isLoggedIn && (role === "admin" || role === "manager") ? (
+              <StudentsPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
+        />
+
+        {/* ✅ O‘qituvchining guruh ichidagi o‘quvchilari sahifasi */}
+        <Route
+          path="/teacher/:teacherId/group/:groupId"
+          element={
+            isLoggedIn && role === "teacher" ? (
+              <SingleStudentsPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
+        />
+
+        {/* ✅ Guruh ichidagi o‘quvchilar sahifasi (admin/manager uchun) */}
+        <Route
+          path="/groups/:teacherId/:groupId"
+          element={
+            isLoggedIn && (role === "admin" || role === "manager") ? (
+              <SingleStudentsPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
         />
       </Route>
     </Routes>

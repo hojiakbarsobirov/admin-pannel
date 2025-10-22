@@ -1,9 +1,10 @@
-// Bu senga yuborganing bilan bir xil, faqat teacher uchun ham qo‘shimcha qilingan
-
+// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUserShield, FaLock } from "react-icons/fa";
+import { db } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 const LoginPage = ({ setIsLoggedIn }) => {
   const [login, setLogin] = useState("");
@@ -11,45 +12,55 @@ const LoginPage = ({ setIsLoggedIn }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
-    // 🔹 Menejer
-    if (login === "Boss123" && password === "Bigboss123") {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("role", "manager");
-      if (setIsLoggedIn) setIsLoggedIn(true);
-      navigate("/admin-page");
-      return;
-    }
+    try {
+      // 🔹 Menejer
+      if (login === "Boss123" && password === "Bigboss123") {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("role", "manager");
+        if (setIsLoggedIn) setIsLoggedIn(true);
+        navigate("/admin-page");
+        return;
+      }
 
-    // 🔹 Admin
-    const admins = JSON.parse(localStorage.getItem("admins")) || [];
-    const admin = admins.find(
-      (a) => a.login === login && a.password === password
-    );
-    if (admin) {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("role", "admin");
-      navigate("/admin-page");
-      return;
-    }
+      // 🔹 Firestore’dagi adminlarni tekshirish
+      const adminsSnap = await getDocs(collection(db, "admins"));
+      const admins = adminsSnap.docs.map((d) => d.data());
+      const admin = admins.find(
+        (a) => a.login === login && a.password === password
+      );
 
-    // 🔹 Teacher
-    const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
-    const teacher = teachers.find(
-      (t) => t.login === login && t.password === password
-    );
-    if (teacher) {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("role", "teacher");
-      // Teacherlarni o'z sahifasiga yo'naltirish
-      navigate("/teachers");
-      return;
-    }
+      if (admin) {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("role", "admin");
+        localStorage.setItem("currentAdmin", login);
+        navigate("/admin-page");
+        return;
+      }
 
-    setError("❌ Login yoki parol noto‘g‘ri");
+      // 🔹 Firestore’dagi teacherlarni tekshirish
+      const teachersSnap = await getDocs(collection(db, "teachers"));
+      const teachers = teachersSnap.docs.map((d) => d.data());
+      const teacher = teachers.find(
+        (t) => t.login === login && t.password === password
+      );
+
+      if (teacher) {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("role", "teacher");
+        localStorage.setItem("currentTeacher", login);
+        navigate("/teachers");
+        return;
+      }
+
+      setError("❌ Login yoki parol noto‘g‘ri");
+    } catch (err) {
+      console.error("❌ Kirishda xatolik:", err);
+      setError("Server bilan bog‘lanishda xatolik yuz berdi.");
+    }
   };
 
   return (
