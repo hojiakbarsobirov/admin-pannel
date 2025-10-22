@@ -109,7 +109,7 @@ const SingleStudentsPage = () => {
         onClick={() => navigate(-1)}
         className="flex items-center text-gray-600 hover:text-black mb-4"
       >
-        <FaArrowLeft className="mr-2" /> Orqaga
+        <FaArrowLeft className="mr-2" />
       </button>
 
       {/* Sarlavha va tugma */}

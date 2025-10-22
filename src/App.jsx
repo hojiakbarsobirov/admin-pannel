@@ -13,7 +13,9 @@ import LoginPage from "./pages/LoginPage";
 import TeacherPage from "./pages/TeacherPage";
 import CreateGroupPage from "./pages/CreateGroupPage";
 import StudentsPage from "./pages/CreateGroup";
-import SingleStudentsPage from "./pages/SingleStudentsPage"; // 🔹 Yangi sahifa import qilindi
+import SingleStudentsPage from "./pages/SingleStudentsPage";
+import GroupDetailPage from "./pages/GroupDetailPage"; // 🔹 Davomat sahifasi
+import AttendancePage from "./pages/AttendancePage"; // 🔹 Davomatlar tarixi sahifasi
 
 const App = () => {
   const navigate = useNavigate();
@@ -131,12 +133,24 @@ const App = () => {
           }
         />
 
-        {/* 🔹 O‘qituvchi sahifasi */}
+        {/* 🔹 O'qituvchi sahifasi */}
         <Route
           path="/teachers"
           element={
             isLoggedIn && role === "teacher" ? (
               <TeacherPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
+        />
+
+        {/* 🔹 Davomatlar tarixi sahifasi (barcha rollar uchun) */}
+        <Route
+          path="/attendance"
+          element={
+            isLoggedIn ? (
+              <AttendancePage />
             ) : (
               <LoginPage setIsLoggedIn={setIsLoggedIn} />
             )
@@ -155,7 +169,7 @@ const App = () => {
           }
         />
 
-        {/* ✅ O‘qituvchi uchun guruhlar sahifasi */}
+        {/* ✅ O'qituvchi uchun guruhlar sahifasi */}
         <Route
           path="/teacher/:teacherId"
           element={
@@ -167,19 +181,19 @@ const App = () => {
           }
         />
 
-        {/* ✅ O‘qituvchining guruh ichidagi o‘quvchilari sahifasi */}
+        {/* ✅ O'qituvchining guruh ichidagi o'quvchilari sahifasi (DAVOMAT) */}
         <Route
           path="/teacher/:teacherId/group/:groupId"
           element={
             isLoggedIn && role === "teacher" ? (
-              <SingleStudentsPage />
+              <GroupDetailPage />
             ) : (
               <LoginPage setIsLoggedIn={setIsLoggedIn} />
             )
           }
         />
 
-        {/* ✅ Guruh ichidagi o‘quvchilar sahifasi (admin/manager uchun) */}
+        {/* ✅ Guruh ichidagi o'quvchilar sahifasi (admin/manager uchun) */}
         <Route
           path="/groups/:teacherId/:groupId"
           element={
