@@ -17,7 +17,7 @@ import { FaArrowLeft } from "react-icons/fa";
 const GroupDetailPage = () => {
   const { teacherId, groupId } = useParams();
   const navigate = useNavigate();
-  
+
   const [group, setGroup] = useState(null);
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
@@ -27,21 +27,9 @@ const GroupDetailPage = () => {
   const [existingAttendance, setExistingAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
-  // Qarzdorlar uchun state
-  const [showDebtorModal, setShowDebtorModal] = useState(false);
-  const [allGroups, setAllGroups] = useState([]);
-  const [debtorForm, setDebtorForm] = useState({
-    name: "",
-    surname: "",
-    phone: "",
-    groupId: "",
-    debtAmount: ""
-  });
 
   useEffect(() => {
     fetchGroupAndStudents();
-    fetchAllGroups();
   }, [groupId]);
 
   useEffect(() => {
@@ -79,19 +67,6 @@ const GroupDetailPage = () => {
       console.error("❌ Ma'lumotlarni olishda xato:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchAllGroups = async () => {
-    try {
-      const groupsSnap = await getDocs(collection(db, "groups"));
-      const groupsList = groupsSnap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
-      setAllGroups(groupsList);
-    } catch (error) {
-      console.error("❌ Guruhlarni olishda xato:", error);
     }
   };
 
@@ -161,50 +136,6 @@ const GroupDetailPage = () => {
     }
   };
 
-  const handleDebtorSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!debtorForm.name || !debtorForm.surname || !debtorForm.groupId || !debtorForm.debtAmount) {
-      alert("❌ Iltimos, barcha maydonlarni to'ldiring!");
-      return;
-    }
-
-    try {
-      const debtorData = {
-        ...debtorForm,
-        debtAmount: parseFloat(debtorForm.debtAmount.replace(/\./g, "")),
-        createdAt: new Date().toISOString(),
-        teacherId
-      };
-
-      await addDoc(collection(db, "debtors"), debtorData);
-      alert("✅ Qarzdor muvaffaqiyatli qo'shildi!");
-      
-      setShowDebtorModal(false);
-      setDebtorForm({
-        name: "",
-        surname: "",
-        phone: "",
-        groupId: "",
-        debtAmount: ""
-      });
-    } catch (error) {
-      console.error("❌ Qarzdorni qo'shishda xato:", error);
-      alert("❌ Xatolik yuz berdi!");
-    }
-  };
-
-  const formatNumberWithDots = (value) => {
-    const numStr = value.replace(/\D/g, "");
-    if (!numStr) return "";
-    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
-
-  const handleDebtAmountChange = (e) => {
-    const formatted = formatNumberWithDots(e.target.value);
-    setDebtorForm({ ...debtorForm, debtAmount: formatted });
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "keldi":
@@ -250,7 +181,7 @@ const GroupDetailPage = () => {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-0">
       {/* Header */}
       <div className="mb-6">
         <button
@@ -268,12 +199,6 @@ const GroupDetailPage = () => {
               Jami o'quvchilar: {students.length} ta
             </p>
           </div>
-          <button
-            onClick={() => setShowDebtorModal(true)}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium"
-          >
-            💰 Qarzdor qo'shish
-          </button>
         </div>
       </div>
 
@@ -392,115 +317,6 @@ const GroupDetailPage = () => {
               ? "Davomatni yangilash"
               : "Davomatni saqlash"}
           </button>
-        </div>
-      )}
-
-      {/* Qarzdor qo'shish Modal */}
-      {showDebtorModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Qarzdor qo'shish
-            </h2>
-            <form onSubmit={handleDebtorSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ism *
-                  </label>
-                  <input
-                    type="text"
-                    value={debtorForm.name}
-                    onChange={(e) =>
-                      setDebtorForm({ ...debtorForm, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Familiya *
-                  </label>
-                  <input
-                    type="text"
-                    value={debtorForm.surname}
-                    onChange={(e) =>
-                      setDebtorForm({ ...debtorForm, surname: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Telefon
-                  </label>
-                  <input
-                    type="tel"
-                    value={debtorForm.phone}
-                    onChange={(e) =>
-                      setDebtorForm({ ...debtorForm, phone: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Guruh *
-                  </label>
-                  <select
-                    value={debtorForm.groupId}
-                    onChange={(e) =>
-                      setDebtorForm({ ...debtorForm, groupId: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Guruhni tanlang</option>
-                    {allGroups.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.groupName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Qarzdorlik miqdori (so'm) *
-                  </label>
-                  <input
-                    type="text"
-                    value={debtorForm.debtAmount}
-                    onChange={handleDebtAmountChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                    placeholder="Misol: 200.000"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowDebtorModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium"
-                >
-                  Bekor qilish
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                >
-                  Saqlash
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </div>
