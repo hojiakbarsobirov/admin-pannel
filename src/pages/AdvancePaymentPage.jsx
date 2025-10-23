@@ -69,51 +69,62 @@ const AdvancePaymentPage = () => {
     setShowDeleteModal(true);
   };
 
-  // 🔹 AdvancePaymentPage.jsx
-const handleDelete = async () => {
-  if (!selectedPayment) return;
+  const handleDelete = async () => {
+    if (!selectedPayment) return;
 
-  // Shu yerga yangi kodni qo‘ying
-  try {
-    const deletedRef = doc(db, "deleted-users", selectedPayment.id);
+    try {
+      const deletedRef = doc(db, "deleted-users", selectedPayment.id);
 
-    // 🔹 Formatlangan sana bilan saqlash
-    const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()} - ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      await setDoc(deletedRef, {
+        ...selectedPayment,
+        deletedAt: new Date(),
+      });
 
-  await setDoc(deletedRef, {
-  ...selectedPayment,
-  deletedAt: new Date(), // bu haqiqiy Date object bo'ladi
-});
+      await deleteDoc(doc(db, "advance-payments", selectedPayment.id));
 
+      setPayments((prev) => prev.filter((p) => p.id !== selectedPayment.id));
+      setShowDeleteModal(false);
+      setSelectedPayment(null);
 
+      navigate("/deleted-users");
+    } catch (error) {
+      console.error("O‘chirishda xatolik:", error);
+      alert("❌ O‘chirishda muammo yuz berdi!");
+    }
+  };
 
-    await deleteDoc(doc(db, "advance-payments", selectedPayment.id));
-
-    setPayments((prev) => prev.filter((p) => p.id !== selectedPayment.id));
-    setShowDeleteModal(false);
-    setSelectedPayment(null);
-    
-    navigate("/deleted-users");
-  } catch (error) {
-    console.error("O‘chirishda xatolik:", error);
-    alert("❌ O‘chirishda muammo yuz berdi!");
-  }
-};
-
-
-
+  // 🔹 Jami to‘lovlarni hisoblash
+  const totalAmount = payments.reduce(
+    (sum, p) => sum + (Number(p.amount) || 0),
+    0
+  );
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-4 px-2">
-      <h2 className="text-xl sm:text-3xl font-bold text-yellow-600 mb-5">
+      <h2 className="text-xl sm:text-3xl font-bold text-yellow-600 mb-3">
         💳 Oldindan to‘lovlar ro‘yxati
       </h2>
 
+      {/* 🔹 Jami to‘lovlar tepada */}
+      {!loading && payments.length > 0 && (
+        <div className="w-full max-w-5xl flex justify-end mb-3 pr-4">
+          <div className="text-right text-lg font-semibold text-gray-700">
+            Jami to‘lovlar:{" "}
+            <span className="text-green-600">
+              {totalAmount.toLocaleString("uz-UZ")} so‘m
+            </span>
+          </div>
+        </div>
+      )}
+
       {loading ? (
-        <p className="text-center text-gray-500 py-10">Ma’lumotlar yuklanmoqda...</p>
+        <p className="text-center text-gray-500 py-10">
+          Ma’lumotlar yuklanmoqda...
+        </p>
       ) : payments.length === 0 ? (
-        <p className="text-center text-gray-500 py-10">Hech qanday oldindan to‘lov topilmadi</p>
+        <p className="text-center text-gray-500 py-10">
+          Hech qanday oldindan to‘lov topilmadi
+        </p>
       ) : (
         <div className="overflow-x-auto w-full max-w-5xl">
           <table className="min-w-full text-left border-collapse text-sm sm:text-base">
@@ -131,7 +142,9 @@ const handleDelete = async () => {
               {payments.map((p, index) => (
                 <tr
                   key={p.id}
-                  className={`border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"}`}
+                  className={`border-b ${
+                    index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                  }`}
                 >
                   <td className="py-2 px-4">{index + 1}</td>
                   <td className="py-2 px-4">{p.name}</td>
