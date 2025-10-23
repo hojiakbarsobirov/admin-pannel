@@ -67,14 +67,18 @@ const DeletedUsersPage = () => {
       u.phone?.includes(search)
   );
 
-  // 🕒 Vaqt formatlash
   const formatUzTime = (timestamp) => {
-    if (!timestamp) return "-";
-    const date = new Date(timestamp);
-    return `${date.toLocaleDateString("uz-UZ")} ${date
-      .toLocaleTimeString("uz-UZ")
-      .slice(0, 5)}`;
-  };
+  if (!timestamp) return "-";
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); // Firestore timestamp yoki Date
+  const day = String(date.getDate()).padStart(2,"0");
+  const month = String(date.getMonth()+1).padStart(2,"0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2,"0");
+  const minutes = String(date.getMinutes()).padStart(2,"0");
+  return `${day}.${month}.${year} - ${hours}:${minutes}`;
+};
+
+
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0 sm:px-0">

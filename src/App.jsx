@@ -16,6 +16,8 @@ import StudentsPage from "./pages/CreateGroup";
 import SingleStudentsPage from "./pages/SingleStudentsPage";
 import GroupDetailPage from "./pages/GroupDetailPage"; // 🔹 Davomat sahifasi
 import AttendancePage from "./pages/AttendancePage"; // 🔹 Davomatlar tarixi sahifasi
+import DebtorsPage from "./pages/DebtorsPage"; // 🔹 Qarzdorlar sahifasi
+import AdvancePaymentPage from "./pages/AdvancePaymentPage"; // 🔹 Oldindan to‘lov sahifasi
 
 const App = () => {
   const navigate = useNavigate();
@@ -48,44 +50,28 @@ const App = () => {
         <Route
           path="/"
           element={
-            isLoggedIn ? (
-              <HomePage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
+            isLoggedIn ? <HomePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
         <Route
           path="/all-users"
           element={
-            isLoggedIn ? (
-              <AllUsersPage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
+            isLoggedIn ? <AllUsersPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
         <Route
           path="/deleted-users"
           element={
-            isLoggedIn ? (
-              <DeletedUsersPage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
+            isLoggedIn ? <DeletedUsersPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
         <Route
           path="/feedback"
           element={
-            isLoggedIn ? (
-              <FeedBackPage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
+            isLoggedIn ? <FeedBackPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
@@ -114,11 +100,7 @@ const App = () => {
         <Route
           path="/admin-page"
           element={
-            isLoggedIn ? (
-              <AdminPage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
+            isLoggedIn ? <AdminPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
@@ -149,11 +131,7 @@ const App = () => {
         <Route
           path="/attendance"
           element={
-            isLoggedIn ? (
-              <AttendancePage />
-            ) : (
-              <LoginPage setIsLoggedIn={setIsLoggedIn} />
-            )
+            isLoggedIn ? <AttendancePage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
@@ -199,6 +177,24 @@ const App = () => {
           element={
             isLoggedIn && (role === "admin" || role === "manager") ? (
               <SingleStudentsPage />
+            ) : (
+              <LoginPage setIsLoggedIn={setIsLoggedIn} />
+            )
+          }
+        />
+
+        {/* 🔹 Qarzdorlar sahifasi (barcha rollar uchun) */}
+        <Route
+          path="/debtors"
+          element={isLoggedIn ? <DebtorsPage /> : <LoginPage setIsLoggedIn={setIsLoggedIn} />}
+        />
+
+        {/* 🔹 Oldindan to‘lov sahifasi (faqat admin va manager) */}
+        <Route
+          path="/advance-payment"
+          element={
+            isLoggedIn && (role === "admin" || role === "manager") ? (
+              <AdvancePaymentPage />
             ) : (
               <LoginPage setIsLoggedIn={setIsLoggedIn} />
             )

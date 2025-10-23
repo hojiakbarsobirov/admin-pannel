@@ -37,7 +37,7 @@ const LoginPage = ({ setIsLoggedIn }) => {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("role", "admin");
         localStorage.setItem("currentAdmin", login);
-        navigate("/admin-page");
+        navigate("/");
         return;
       }
 

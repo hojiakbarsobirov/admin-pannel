@@ -91,7 +91,7 @@ const TeacherPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-0">
       {/* 🔹 Sarlavha va o‘qituvchi ismi */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-blue-500">Guruhlar ro‘yxati</h1>
@@ -101,7 +101,7 @@ const TeacherPage = () => {
       </div>
 
       {/* 🔹 Guruhlar jadvali */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+      <div className="bg-white rounded shadow overflow-x-auto">
         {groups.length === 0 ? (
           <div className="text-center py-6 text-gray-500 italic">
             Sizda hozircha guruhlar mavjud emas.
