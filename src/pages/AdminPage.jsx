@@ -32,6 +32,7 @@ const AdminPage = () => {
     password: "",
   });
   const [editData, setEditData] = useState({
+    id: "",
     name: "",
     phone: "",
     login: "",
@@ -41,6 +42,7 @@ const AdminPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteDocId, setDeleteDocId] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(null);
+
   const userRole = localStorage.getItem("role");
 
   // 🔹 Firestore’dan ma’lumotlarni olish
@@ -48,10 +50,16 @@ const AdminPage = () => {
     try {
       const adminsSnap = await getDocs(collection(db, "admins"));
       const teachersSnap = await getDocs(collection(db, "teachers"));
-
-      const admins = adminsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), role: "admin" }));
-      const teachers = teachersSnap.docs.map((doc) => ({ id: doc.id, ...doc.data(), role: "teacher" }));
-
+      const admins = adminsSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        role: "admin",
+      }));
+      const teachers = teachersSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        role: "teacher",
+      }));
       setProfiles([...admins, ...teachers]);
     } catch (error) {
       console.error("❌ Ma’lumotlarni olishda xatolik:", error);
@@ -69,10 +77,14 @@ const AdminPage = () => {
       alert("Barcha maydonlarni to‘ldiring!");
       return;
     }
-
     try {
       const collectionName = roleType === "admin" ? "admins" : "teachers";
-      await addDoc(collection(db, collectionName), { name, phone, login, password });
+      await addDoc(collection(db, collectionName), {
+        name,
+        phone,
+        login,
+        password,
+      });
       setShowModal(false);
       setNewProfile({ name: "", phone: "", login: "", password: "" });
       fetchProfiles();
@@ -84,7 +96,13 @@ const AdminPage = () => {
   // 🔹 Profilni tahrirlash uchun ochish
   const handleEdit = (index) => {
     const prof = profiles[index];
-    setEditData({ ...prof });
+    setEditData({
+      id: prof.id,
+      name: prof.name,
+      phone: prof.phone,
+      login: prof.login,
+      password: prof.password,
+    });
     setRoleType(prof.role);
     setEditIndex(index);
     setEditPasswordVisible(false);
@@ -98,7 +116,6 @@ const AdminPage = () => {
       alert("Barcha maydonlarni to‘ldiring!");
       return;
     }
-
     try {
       const collectionName = roleType === "admin" ? "admins" : "teachers";
       const ref = doc(db, collectionName, id);
@@ -145,7 +162,9 @@ const AdminPage = () => {
           <h2 className="text-2xl font-semibold text-gray-700">
             Sizda bu sahifani ko‘rish huquqi yo‘q 🚫
           </h2>
-          <p className="text-gray-500 mt-2">Faqat menejerlar uchun ruxsat berilgan.</p>
+          <p className="text-gray-500 mt-2">
+            Faqat menejerlar uchun ruxsat berilgan.
+          </p>
         </div>
       </div>
     );
@@ -157,7 +176,6 @@ const AdminPage = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-700 flex items-center gap-2">
           <FaUserShield className="text-blue-500" /> Profil boshqaruvi
         </h1>
-
         <button
           onClick={() => {
             setEditIndex(null);
@@ -178,11 +196,11 @@ const AdminPage = () => {
             <FaUserShield /> Adminlar
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {profiles.filter(p => p.role === "admin").length === 0 ? (
+            {profiles.filter((p) => p.role === "admin").length === 0 ? (
               <p className="text-gray-500 text-sm italic">Adminlar yo‘q</p>
             ) : (
               profiles
-                .filter(p => p.role === "admin")
+                .filter((p) => p.role === "admin")
                 .map((prof, index) => (
                   <motion.div
                     key={prof.id}
@@ -195,18 +213,22 @@ const AdminPage = () => {
                         {prof.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">{prof.name}</h3>
+                        <h3 className="font-semibold text-gray-800">
+                          {prof.name}
+                        </h3>
                         <p className="text-sm text-gray-500">{prof.phone}</p>
                       </div>
                     </div>
-
                     {expandedIndex === index && (
                       <div className="mt-3 text-sm text-gray-600 bg-gray-50 rounded-xl p-3">
-                        <p><strong>Login:</strong> {prof.login}</p>
-                        <p><strong>Parol:</strong> {prof.password}</p>
+                        <p>
+                          <strong>Login:</strong> {prof.login}
+                        </p>
+                        <p>
+                          <strong>Parol:</strong> {prof.password}
+                        </p>
                       </div>
                     )}
-
                     <div className="mt-3 flex justify-end gap-2">
                       <button
                         onClick={(e) => {
@@ -239,11 +261,11 @@ const AdminPage = () => {
             <FaChalkboardTeacher /> O‘qituvchilar
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {profiles.filter(p => p.role === "teacher").length === 0 ? (
+            {profiles.filter((p) => p.role === "teacher").length === 0 ? (
               <p className="text-gray-500 text-sm italic">O‘qituvchilar yo‘q</p>
             ) : (
               profiles
-                .filter(p => p.role === "teacher")
+                .filter((p) => p.role === "teacher")
                 .map((prof, index) => (
                   <motion.div
                     key={prof.id}
@@ -256,18 +278,22 @@ const AdminPage = () => {
                         {prof.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">{prof.name}</h3>
+                        <h3 className="font-semibold text-gray-800">
+                          {prof.name}
+                        </h3>
                         <p className="text-sm text-gray-500">{prof.phone}</p>
                       </div>
                     </div>
-
                     {expandedIndex === index && (
                       <div className="mt-3 text-sm text-gray-600 bg-gray-50 rounded-xl p-3">
-                        <p><strong>Login:</strong> {prof.login}</p>
-                        <p><strong>Parol:</strong> {prof.password}</p>
+                        <p>
+                          <strong>Login:</strong> {prof.login}
+                        </p>
+                        <p>
+                          <strong>Parol:</strong> {prof.password}
+                        </p>
                       </div>
                     )}
-
                     <div className="mt-3 flex justify-end gap-2">
                       <button
                         onClick={(e) => {
@@ -304,14 +330,18 @@ const AdminPage = () => {
         >
           <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">
-              {editIndex !== null ? "Profilni tahrirlash" : "Yangi profil qo‘shish"}
+              {editIndex !== null
+                ? "Profilni tahrirlash"
+                : "Yangi profil qo‘shish"}
             </h2>
 
             {/* Rol tanlash */}
             <div className="flex gap-3 mb-4">
               <label
                 className={`flex items-center gap-2 cursor-pointer px-3 py-1 rounded-xl ${
-                  roleType === "admin" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600"
+                  roleType === "admin"
+                    ? "bg-blue-100 text-blue-600"
+                    : "bg-gray-100 text-gray-600"
                 }`}
               >
                 <input
@@ -322,10 +352,11 @@ const AdminPage = () => {
                 />
                 Admin
               </label>
-
               <label
                 className={`flex items-center gap-2 cursor-pointer px-3 py-1 rounded-xl ${
-                  roleType === "teacher" ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"
+                  roleType === "teacher"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-gray-100 text-gray-600"
                 }`}
               >
                 <input
@@ -343,7 +374,9 @@ const AdminPage = () => {
               <input
                 type="text"
                 placeholder="Ism Familya"
-                value={editIndex !== null ? editData.name : newProfile.name}
+                value={
+                  editIndex !== null ? editData.name : newProfile.name
+                }
                 onChange={(e) =>
                   editIndex !== null
                     ? setEditData({ ...editData, name: e.target.value })
@@ -354,7 +387,9 @@ const AdminPage = () => {
               <input
                 type="text"
                 placeholder="Telefon raqam"
-                value={editIndex !== null ? editData.phone : newProfile.phone}
+                value={
+                  editIndex !== null ? editData.phone : newProfile.phone
+                }
                 onChange={(e) =>
                   editIndex !== null
                     ? setEditData({ ...editData, phone: e.target.value })
@@ -365,7 +400,9 @@ const AdminPage = () => {
               <input
                 type="text"
                 placeholder="Login"
-                value={editIndex !== null ? editData.login : newProfile.login}
+                value={
+                  editIndex !== null ? editData.login : newProfile.login
+                }
                 onChange={(e) =>
                   editIndex !== null
                     ? setEditData({ ...editData, login: e.target.value })
@@ -377,17 +414,26 @@ const AdminPage = () => {
                 <input
                   type={editPasswordVisible ? "text" : "password"}
                   placeholder="Parol"
-                  value={editIndex !== null ? editData.password : newProfile.password}
+                  value={
+                    editIndex !== null
+                      ? editData.password
+                      : newProfile.password
+                  }
                   onChange={(e) =>
                     editIndex !== null
                       ? setEditData({ ...editData, password: e.target.value })
-                      : setNewProfile({ ...newProfile, password: e.target.value })
+                      : setNewProfile({
+                          ...newProfile,
+                          password: e.target.value,
+                        })
                   }
                   className="border rounded-lg p-2 w-full"
                 />
                 <button
                   type="button"
-                  onClick={() => setEditPasswordVisible((v) => !v)}
+                  onClick={() =>
+                    setEditPasswordVisible((v) => !v)
+                  }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {editPasswordVisible ? <FaEyeSlash /> : <FaEye />}
@@ -420,7 +466,9 @@ const AdminPage = () => {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-lg text-center">
-            <h3 className="text-lg font-semibold mb-3 text-red-600">🗑 Profilni o‘chirish</h3>
+            <h3 className="text-lg font-semibold mb-3 text-red-600">
+              🗑 Profilni o‘chirish
+            </h3>
             <p className="text-gray-700 mb-5">
               Rostdan ham ushbu profilni o‘chirmoqchimisiz?
             </p>

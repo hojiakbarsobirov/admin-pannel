@@ -126,7 +126,7 @@ const AdvancePaymentPage = () => {
           Hech qanday oldindan to‘lov topilmadi
         </p>
       ) : (
-        <div className="overflow-x-auto w-full max-w-5xl">
+        <div className="overflow-x-auto w-full max-w-5xl rounded">
           <table className="min-w-full text-left border-collapse text-sm sm:text-base">
             <thead className="bg-yellow-500 text-white">
               <tr>

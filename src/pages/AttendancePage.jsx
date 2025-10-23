@@ -53,7 +53,8 @@ const AttendancePage = () => {
   const calculateStats = (records) => {
     const stats = { keldi: 0, kelmadi: 0, sababli: 0 };
     if (records) {
-      Object.values(records).forEach((status) => {
+      Object.values(records).forEach((value) => {
+        const status = typeof value === "object" ? value.status : value;
         if (stats[status] !== undefined) stats[status]++;
       });
     }
@@ -182,6 +183,17 @@ const AttendancePage = () => {
             const stats = calculateStats(attendance.records);
             const totalStudents = Object.keys(attendance.records || {}).length;
 
+            // 🔹 Sababli o'quvchilar ro'yxatini tayyorlash
+            const sababliStudents = Object.entries(attendance.records)
+              .filter(([_, val]) => {
+                const status = typeof val === "object" ? val.status : val;
+                return status === "sababli";
+              })
+              .map(([studentId, val]) => {
+                const sabab = typeof val === "object" ? val.reason || "Sabab ko‘rsatilmagan" : "Sabab yo‘q";
+                return { studentId, sabab };
+              });
+
             return (
               <div
                 key={attendance.id}
@@ -211,6 +223,18 @@ const AttendancePage = () => {
                         <span>Kelmadi: {stats.kelmadi} ta</span>
                         <span>Sababli: {stats.sababli} ta</span>
                       </div>
+
+                      {/* 🔹 Sababli o'quvchilar sabablari */}
+                      {sababliStudents.length > 0 && (
+                        <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                          <h4 className="font-semibold text-yellow-700 mb-2">Sababli o'quvchilar:</h4>
+                          <ul className="text-yellow-800 text-sm list-disc list-inside space-y-1">
+                            {sababliStudents.map((s, i) => (
+                              <li key={i}>{s.sabab}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
 

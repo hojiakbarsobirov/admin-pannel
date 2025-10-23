@@ -12,7 +12,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaTimes } from "react-icons/fa";
 
 const GroupDetailPage = () => {
   const { teacherId, groupId } = useParams();
@@ -27,6 +27,11 @@ const GroupDetailPage = () => {
   const [existingAttendance, setExistingAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // 🔹 Yangi qo‘shilgan: sabab modal state
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [reasonText, setReasonText] = useState("");
 
   useEffect(() => {
     fetchGroupAndStudents();
@@ -97,11 +102,33 @@ const GroupDetailPage = () => {
     }
   };
 
+  // 🔹 Agar sababli bosilsa, modal ochiladi
   const handleAttendanceChange = (studentId, status) => {
+    if (status === "sababli") {
+      setSelectedStudent(studentId);
+      setShowReasonModal(true);
+      setReasonText("");
+    } else {
+      setAttendance((prev) => ({
+        ...prev,
+        [studentId]: status,
+      }));
+    }
+  };
+
+  // 🔹 Sababni saqlash
+  const handleSaveReason = () => {
+    if (!reasonText.trim()) {
+      alert("Iltimos, sababni kiriting!");
+      return;
+    }
     setAttendance((prev) => ({
       ...prev,
-      [studentId]: status,
+      [selectedStudent]: { status: "sababli", reason: reasonText },
     }));
+    setShowReasonModal(false);
+    setSelectedStudent(null);
+    setReasonText("");
   };
 
   const saveAttendance = async () => {
@@ -137,7 +164,8 @@ const GroupDetailPage = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
+    const s = typeof status === "object" ? status.status : status;
+    switch (s) {
       case "keldi":
         return "bg-green-100 text-green-800 border-green-300";
       case "kelmadi":
@@ -150,7 +178,8 @@ const GroupDetailPage = () => {
   };
 
   const getStatusLabel = (status) => {
-    switch (status) {
+    const s = typeof status === "object" ? status.status : status;
+    switch (s) {
       case "keldi":
         return "✓ Keldi";
       case "kelmadi":
@@ -158,13 +187,14 @@ const GroupDetailPage = () => {
       case "sababli":
         return "⚠ Sababli";
       default:
-        return status;
+        return s;
     }
   };
 
   const calculateStats = () => {
     const stats = { keldi: 0, kelmadi: 0, sababli: 0 };
-    Object.values(attendance).forEach((status) => {
+    Object.values(attendance).forEach((s) => {
+      const status = typeof s === "object" ? s.status : s;
       if (stats[status] !== undefined) stats[status]++;
     });
     return stats;
@@ -182,7 +212,6 @@ const GroupDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-0">
-      {/* Header */}
       <div className="mb-6">
         <button
           onClick={() => navigate("/teachers")}
@@ -202,7 +231,7 @@ const GroupDetailPage = () => {
         </div>
       </div>
 
-      {/* Sana tanlash va statistika */}
+      {/* Sana va statistikalar */}
       <div className="bg-white rounded shadow p-6 mb-6">
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div>
@@ -240,7 +269,7 @@ const GroupDetailPage = () => {
         </div>
       </div>
 
-      {/* Davomat jadvali */}
+      {/* Jadval */}
       <div className="bg-white rounded shadow overflow-hidden">
         {students.length === 0 ? (
           <div className="text-center py-8 text-gray-500 italic">
@@ -281,8 +310,10 @@ const GroupDetailPage = () => {
                               handleAttendanceChange(student.id, status)
                             }
                             className={`px-3 py-1 rounded-lg border-2 text-sm font-medium transition ${
-                              attendance[student.id] === status
-                                ? getStatusColor(status)
+                              (typeof attendance[student.id] === "object"
+                                ? attendance[student.id].status
+                                : attendance[student.id]) === status
+                                ? getStatusColor(attendance[student.id])
                                 : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
                             }`}
                           >
@@ -290,6 +321,11 @@ const GroupDetailPage = () => {
                           </button>
                         ))}
                       </div>
+                      {attendance[student.id]?.reason && (
+                        <p className="text-xs text-yellow-600 mt-1 italic">
+                          Sabab: {attendance[student.id].reason}
+                        </p>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -317,6 +353,42 @@ const GroupDetailPage = () => {
               ? "Davomatni yangilash"
               : "Davomatni saqlash"}
           </button>
+        </div>
+      )}
+
+      {/* 🔹 Sabab modal oynasi */}
+      {showReasonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 relative">
+            <button
+              onClick={() => setShowReasonModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+            >
+              <FaTimes />
+            </button>
+            <h3 className="text-lg font-semibold mb-3">Sababni kiriting</h3>
+            <textarea
+              value={reasonText}
+              onChange={(e) => setReasonText(e.target.value)}
+              rows="4"
+              placeholder="Masalan: Kasal bo‘ldi"
+              className="w-full border p-2 rounded mb-4 resize-none"
+            ></textarea>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowReasonModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={handleSaveReason}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                Saqlash
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
