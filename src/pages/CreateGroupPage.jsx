@@ -89,7 +89,7 @@ const CreateGroupPage = () => {
                   }`}
                 >
                   <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2 font-semibold text-gray-700">
+                  <td className="px-4 py-2  font-semibold text-blue-500 hover:text-blue-600 transition ease-in-out">
                     {t.name}
                   </td>
                   <td className="px-4 py-2">{t.login}</td>
