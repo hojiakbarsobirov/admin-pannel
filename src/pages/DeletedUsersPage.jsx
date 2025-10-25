@@ -10,6 +10,7 @@ const DeletedUsersPage = () => {
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [expandedRows, setExpandedRows] = useState({}); // ✅ qo‘shildi
 
   // 🔹 Real-time deleted-users
   useEffect(() => {
@@ -68,17 +69,15 @@ const DeletedUsersPage = () => {
   );
 
   const formatUzTime = (timestamp) => {
-  if (!timestamp) return "-";
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); // Firestore timestamp yoki Date
-  const day = String(date.getDate()).padStart(2,"0");
-  const month = String(date.getMonth()+1).padStart(2,"0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2,"0");
-  const minutes = String(date.getMinutes()).padStart(2,"0");
-  return `${day}.${month}.${year} - ${hours}:${minutes}`;
-};
-
-
+    if (!timestamp) return "-";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const day = String(date.getDate()).padStart(2,"0");
+    const month = String(date.getMonth()+1).padStart(2,"0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2,"0");
+    const minutes = String(date.getMinutes()).padStart(2,"0");
+    return `${day}.${month}.${year} - ${hours}:${minutes}`;
+  };
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0 sm:px-0">
@@ -122,38 +121,45 @@ const DeletedUsersPage = () => {
               </thead>
               <tbody>
                 {filteredUsers.map((user, index) => (
-                  <tr
-                    key={`${user.id}-${index}`} // ✅ endi unique key
-                    className={`border-b ${
-                      index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                    } hover:bg-red-50 transition`}
-                  >
-                    <td className="py-2 px-4">{index + 1}</td>
-                    <td className="py-2 px-4">{user.name}</td>
-                    <td className="py-2 px-4">{user.phone}</td>
-                    <td className="py-2 px-4">{user.extraPhone || "-"}</td>
-                    <td className="py-2 px-4">{formatUzTime(user.deletedAt)}</td>
-                    <td className="py-2 px-4 text-center space-x-2">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowRestoreModal(true);
-                        }}
-                        className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
-                      >
-                        ♻️ tiklash
-                      </button>
-                      {/* <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowDeleteModal(true);
-                        }}
-                        className="px-2 py-1 text-white rounded hover:scale-125 transition"
-                      >
-                        🗑
-                      </button> */}
-                    </td>
-                  </tr>
+                  <React.Fragment key={`${user.id}-${index}`}>
+                    <tr
+                      className={`border-b ${
+                        index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                      } hover:bg-red-50 transition cursor-pointer`}
+                      onClick={() =>
+                        setExpandedRows({
+                          ...expandedRows,
+                          [user.id]: !expandedRows[user.id],
+                        })
+                      }
+                    >
+                      <td className="py-2 px-4">{index + 1}</td>
+                      <td className="py-2 px-4">{user.name}</td>
+                      <td className="py-2 px-4">{user.phone}</td>
+                      <td className="py-2 px-4">{user.extraPhone || "-"}</td>
+                      <td className="py-2 px-4">{formatUzTime(user.deletedAt)}</td>
+                      <td className="py-2 px-4 text-center space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUser(user);
+                            setShowRestoreModal(true);
+                          }}
+                          className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                        >
+                          ♻️ tiklash
+                        </button>
+                      </td>
+                    </tr>
+
+                    {expandedRows[user.id] && (
+                      <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-gray-100"}`}>
+                        <td colSpan={6} className="py-2 px-4 text-gray-700 italic">
+                          <strong>O‘chirish sababi:</strong> {user.deleteReason || "-"}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
