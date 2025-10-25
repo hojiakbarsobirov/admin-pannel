@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import { collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { AiFillDelete } from "react-icons/ai";
-
+import { FaPhoneAlt } from "react-icons/fa";
 
 const FeedBackPage = () => {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -113,8 +113,8 @@ const FeedBackPage = () => {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0">
-      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center">
-        📞 Qayta aloqa foydalanuvchilari
+      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center flex items-center gap-2">
+        <FaPhoneAlt className="w-8 mt-2"/> Qayta aloqa foydalanuvchilari
       </h2>
 
       <div className="w-full bg-white rounded overflow-hidden shadow">

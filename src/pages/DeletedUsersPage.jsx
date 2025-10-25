@@ -1,7 +1,14 @@
 // DeletedUsersPage.jsx
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, deleteDoc, doc, addDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  addDoc,
+  onSnapshot,
+} from "firebase/firestore";
+import { MdDelete } from "react-icons/md";
 
 const DeletedUsersPage = () => {
   const [deletedUsers, setDeletedUsers] = useState([]);
@@ -71,19 +78,21 @@ const DeletedUsersPage = () => {
   const formatUzTime = (timestamp) => {
     if (!timestamp) return "-";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    const day = String(date.getDate()).padStart(2,"0");
-    const month = String(date.getMonth()+1).padStart(2,"0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2,"0");
-    const minutes = String(date.getMinutes()).padStart(2,"0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${day}.${month}.${year} - ${hours}:${minutes}`;
   };
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0 sm:px-0">
-      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-2 text-center">
-        🗑 O‘chirilgan foydalanuvchilar
-      </h2>
+      <h2 className="flex items-center justify-center gap-2 text-xl sm:text-4xl font-bold text-blue-500 mb-2 text-center">
+  <MdDelete />
+  O‘chirilgan foydalanuvchilar
+</h2>
+
 
       {/* Qidiruv input */}
       <div className="w-full max-w-5xl mb-4">
@@ -137,7 +146,9 @@ const DeletedUsersPage = () => {
                       <td className="py-2 px-4">{user.name}</td>
                       <td className="py-2 px-4">{user.phone}</td>
                       <td className="py-2 px-4">{user.extraPhone || "-"}</td>
-                      <td className="py-2 px-4">{formatUzTime(user.deletedAt)}</td>
+                      <td className="py-2 px-4">
+                        {formatUzTime(user.deletedAt)}
+                      </td>
                       <td className="py-2 px-4 text-center space-x-2">
                         <button
                           onClick={(e) => {
@@ -153,9 +164,17 @@ const DeletedUsersPage = () => {
                     </tr>
 
                     {expandedRows[user.id] && (
-                      <tr className={`${index % 2 === 0 ? "bg-gray-100" : "bg-gray-100"}`}>
-                        <td colSpan={6} className="py-2 px-4 text-gray-700 italic">
-                          <strong>O‘chirish sababi:</strong> {user.deleteReason || "-"}
+                      <tr
+                        className={`${
+                          index % 2 === 0 ? "bg-gray-100" : "bg-gray-100"
+                        }`}
+                      >
+                        <td
+                          colSpan={6}
+                          className="py-2 px-4 text-gray-700 italic"
+                        >
+                          <strong>O‘chirish sababi:</strong>{" "}
+                          {user.deleteReason || "-"}
                         </td>
                       </tr>
                     )}

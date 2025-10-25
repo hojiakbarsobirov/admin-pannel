@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { IoStatsChartSharp } from "react-icons/io5";
 
 const StatistikaPage = () => {
   const [barSeries, setBarSeries] = useState([]);
@@ -23,7 +24,9 @@ const StatistikaPage = () => {
             const data = doc.data();
             const time =
               data.createdAt?.toDate?.() ||
-              new Date(data.createdAt || data.deletedAt || data.feedbackAt || null);
+              new Date(
+                data.createdAt || data.deletedAt || data.feedbackAt || null
+              );
             if (time && !isNaN(time.getTime())) {
               allDates.push(time);
             }
@@ -64,7 +67,13 @@ const StatistikaPage = () => {
           if (diff === 0) return "#3b82f6";
           if (diff === 1) return "#ef4444";
           if (diff === 2) return "#facc15";
-          const pastel = ["#60a5fa", "#93c5fd", "#a5b4fc", "#c7d2fe", "#bfdbfe"];
+          const pastel = [
+            "#60a5fa",
+            "#93c5fd",
+            "#a5b4fc",
+            "#c7d2fe",
+            "#bfdbfe",
+          ];
           return pastel[Math.floor(Math.random() * pastel.length)];
         });
 
@@ -109,7 +118,8 @@ const StatistikaPage = () => {
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
         const thisMonth = allDates.filter(
-          (d) => d.getMonth() === currentMonth && d.getFullYear() === currentYear
+          (d) =>
+            d.getMonth() === currentMonth && d.getFullYear() === currentYear
         );
 
         setMonthlyTotal(thisMonth.length);
@@ -126,8 +136,9 @@ const StatistikaPage = () => {
 
   return (
     <div className="container mx-auto p-0">
-      <h2 className="text-center text-2xl font-bold mb-6 text-blue-600">
-        📊 Kunlik statistika (so‘nggi 7 kun)
+      <h2 className="flex items-center justify-center gap-2 text-center text-2xl font-bold mb-6 text-blue-600">
+        <IoStatsChartSharp />
+        Kunlik statistika (so‘nggi 7 kun)
       </h2>
 
       {loading ? (

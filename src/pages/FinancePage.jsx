@@ -7,6 +7,7 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
+import { FaMoneyBillWave } from "react-icons/fa";
 
 const FinancePage = () => {
   const [payments, setPayments] = useState([]);
@@ -102,8 +103,9 @@ const FinancePage = () => {
 
   return (
     <section className="p-4 min-h-screen bg-gray-50">
-      <h1 className="text-4xl font-bold text-center text-blue-500 mb-6">
-        💰 Moliyaviy Hisobot
+      <h1 className="flex items-center justify-center gap-2 text-4xl font-bold text-blue-500 mb-6 text-center">
+        <FaMoneyBillWave />
+        Moliyaviy Hisobot
       </h1>
 
       {/* Statistika */}
@@ -126,7 +128,7 @@ const FinancePage = () => {
           Hech qanday to‘lov ma’lumotlari topilmadi.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg shadow">
+        <div className="overflow-x-auto rounded shadow">
           <table className="min-w-full border-collapse text-sm sm:text-base">
             <thead className="bg-blue-500 text-white">
               <tr>
@@ -269,8 +271,8 @@ const FinancePage = () => {
                               <strong>Operator:</strong> {p.operator}
                             </p>
                             <p>
-                              <strong>Summasi:</strong>{" "}
-                              {formatNumber(p.amount)} so‘m
+                              <strong>Summasi:</strong> {formatNumber(p.amount)}{" "}
+                              so‘m
                             </p>
                             <p>
                               <strong>To‘lov turi:</strong> {p.paymentType}

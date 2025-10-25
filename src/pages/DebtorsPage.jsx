@@ -11,6 +11,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import { FaMoneyBillWave } from "react-icons/fa";
 
 const DebtorsPage = () => {
   const [debtors, setDebtors] = useState([]);
@@ -181,9 +182,11 @@ const DebtorsPage = () => {
       {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-red-600 mb-2">
-            💰 Qarzdorlar ro'yxati
+          <h1 className="flex items-center justify-center gap-2 text-2xl sm:text-3xl font-bold text-red-600 mb-2 text-center">
+            <FaMoneyBillWave />
+            Qarzdorlar ro'yxati
           </h1>
+
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <p className="text-gray-600">
               Jami qarzdorlar:{" "}

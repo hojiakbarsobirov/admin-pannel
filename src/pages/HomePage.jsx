@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, getDocs, deleteDoc, doc, setDoc, addDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  setDoc,
+  addDoc,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { FaPhone, FaUserPlus } from "react-icons/fa";
 import { AiFillDelete } from "react-icons/ai";
 import { BiCreditCard } from "react-icons/bi";
+import { HiClipboardDocumentList } from "react-icons/hi2";
+import { FaMoneyBillWave } from "react-icons/fa6";
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);
@@ -42,7 +51,9 @@ const HomePage = () => {
       const snapshot = await getDocs(collection(db, "registrations"));
       const data = snapshot.docs.map((doc) => {
         const docData = doc.data();
-        let createdAtDate = docData.createdAt?.toDate ? docData.createdAt.toDate() : new Date(docData.createdAt);
+        let createdAtDate = docData.createdAt?.toDate
+          ? docData.createdAt.toDate()
+          : new Date(docData.createdAt);
         return { id: doc.id, ...docData, createdAt: createdAtDate };
       });
       data.sort((a, b) => b.createdAt - a.createdAt);
@@ -79,6 +90,7 @@ const HomePage = () => {
   const openLeadsModal = () => {
     setLeadsData({
       name: "",
+      lastname: "",
       phone: "+998 ",
       extraPhone: "",
     });
@@ -87,16 +99,24 @@ const HomePage = () => {
 
   // Telefon raqamni formatlash
   const formatPhoneNumber = (value) => {
-    const numbers = value.replace(/\D/g, '');
-    if (!numbers.startsWith('998')) {
-      return '+998 ';
+    const numbers = value.replace(/\D/g, "");
+    if (!numbers.startsWith("998")) {
+      return "+998 ";
     }
     const afterCode = numbers.slice(3);
-    if (afterCode.length === 0) return '+998 ';
+    if (afterCode.length === 0) return "+998 ";
     if (afterCode.length <= 2) return `+998 ${afterCode}`;
-    if (afterCode.length <= 5) return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(2)}`;
-    if (afterCode.length <= 7) return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(2, 5)} ${afterCode.slice(5)}`;
-    return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(2, 5)} ${afterCode.slice(5, 7)} ${afterCode.slice(7, 9)}`;
+    if (afterCode.length <= 5)
+      return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(2)}`;
+    if (afterCode.length <= 7)
+      return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(
+        2,
+        5
+      )} ${afterCode.slice(5)}`;
+    return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(
+      2,
+      5
+    )} ${afterCode.slice(5, 7)} ${afterCode.slice(7, 9)}`;
   };
 
   const handlePhoneChange = (value, field) => {
@@ -172,9 +192,15 @@ const HomePage = () => {
       date: "",
     });
   };
-  
+
   const handlePaymentSubmit = async () => {
-    if (!paymentData.tarif || !paymentData.groupName || !paymentData.operator || !paymentData.amount || !paymentData.date) {
+    if (
+      !paymentData.tarif ||
+      !paymentData.groupName ||
+      !paymentData.operator ||
+      !paymentData.amount ||
+      !paymentData.date
+    ) {
       alert("❌ Barcha maydonlarni to'ldiring!");
       return;
     }
@@ -185,30 +211,37 @@ const HomePage = () => {
         ...paymentData,
         paymentAt: new Date().toISOString(),
       });
-      
+
       // Tanlangan guruhga students ga qo'shish
-      const selectedGroup = groups.find(g => 
-        (g.name === paymentData.groupName) || 
-        (g.groupName === paymentData.groupName) || 
-        (g.title === paymentData.groupName)
+      const selectedGroup = groups.find(
+        (g) =>
+          g.name === paymentData.groupName ||
+          g.groupName === paymentData.groupName ||
+          g.title === paymentData.groupName
       );
-      
+
       if (selectedGroup) {
         const studentAddedDate = new Date().toISOString();
-        
+
         // groups/{groupId}/students ga qo'shish
-        await setDoc(doc(db, "groups", selectedGroup.id, "students", selectedUser.id), {
-          name: selectedUser.name,
-          phone: selectedUser.phone,
-          extraPhone: selectedUser.extraPhone || "",
-          tarif: paymentData.tarif,
-          amount: paymentData.amount,
-          paymentType: paymentData.paymentType,
-          operator: paymentData.operator,
-          createdAt: selectedUser.createdAt instanceof Date ? selectedUser.createdAt.toISOString() : selectedUser.createdAt,
-          addedAt: studentAddedDate,
-        });
-        
+        await setDoc(
+          doc(db, "groups", selectedGroup.id, "students", selectedUser.id),
+          {
+            name: selectedUser.name,
+            phone: selectedUser.phone,
+            extraPhone: selectedUser.extraPhone || "",
+            tarif: paymentData.tarif,
+            amount: paymentData.amount,
+            paymentType: paymentData.paymentType,
+            operator: paymentData.operator,
+            createdAt:
+              selectedUser.createdAt instanceof Date
+                ? selectedUser.createdAt.toISOString()
+                : selectedUser.createdAt,
+            addedAt: studentAddedDate,
+          }
+        );
+
         // students kolleksiyasiga ham qo'shish (StudentsPage uchun)
         await addDoc(collection(db, "students"), {
           groupId: selectedGroup.id,
@@ -221,11 +254,14 @@ const HomePage = () => {
           paymentType: paymentData.paymentType,
           operator: paymentData.operator,
           teacherId: selectedGroup.teacherId || "",
-          createdAt: selectedUser.createdAt instanceof Date ? selectedUser.createdAt.toISOString() : selectedUser.createdAt,
+          createdAt:
+            selectedUser.createdAt instanceof Date
+              ? selectedUser.createdAt.toISOString()
+              : selectedUser.createdAt,
           addedAt: studentAddedDate,
         });
       }
-      
+
       await deleteDoc(doc(db, "registrations", selectedUser.id));
       setUsers(users.filter((u) => u.id !== selectedUser.id));
       setShowPaymentModal(false);
@@ -284,22 +320,22 @@ const HomePage = () => {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-2 px-0 sm:px-0">
-      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center">
-        📋 Ro'yxatdan o'tgan foydalanuvchilar
+      <h2 className="text-xl sm:text-4xl font-bold text-blue-500 mb-5 text-center flex items-center gap-2">
+        <HiClipboardDocumentList /> Ro'yxatdan o'tgan foydalanuvchilar
       </h2>
 
       {/* Qidiruv va Leads qo'shish */}
       <div className="w-full max-w-5xl mb-4 flex gap-2">
         <button
           onClick={openLeadsModal}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap"
         >
           <FaUserPlus />
           Leads qo'shish
         </button>
         <input
           type="text"
-          placeholder="🔍 Ism yoki raqam orqali qidirish..."
+          placeholder="Ism yoki raqam orqali qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -309,9 +345,13 @@ const HomePage = () => {
       {/* Jadval */}
       <div className="w-full bg-white rounded overflow-hidden">
         {loading ? (
-          <p className="text-center text-gray-500 py-10">Ma'lumotlar yuklanmoqda...</p>
+          <p className="text-center text-gray-500 py-10">
+            Ma'lumotlar yuklanmoqda...
+          </p>
         ) : filteredUsers.length === 0 ? (
-          <p className="text-center text-gray-500 py-10">Hech qanday foydalanuvchi topilmadi</p>
+          <p className="text-center text-gray-500 py-10">
+            Hech qanday foydalanuvchi topilmadi
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left border-collapse text-sm sm:text-base">
@@ -329,25 +369,42 @@ const HomePage = () => {
                 {filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    className={`border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"} hover:bg-blue-50 transition`}
+                    className={`border-b ${
+                      index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                    } hover:bg-blue-50 transition`}
                   >
                     <td className="py-2 px-4">{index + 1}</td>
                     <td className="py-2 px-4">{user.name}</td>
                     <td className="py-2 px-4">{user.phone}</td>
                     <td className="py-2 px-4">{user.extraPhone || "-"}</td>
-                    <td className="py-2 px-4">{formatUzTime(user.createdAt)}</td>
+                    <td className="py-2 px-4">
+                      {formatUzTime(user.createdAt)}
+                    </td>
                     <td className="py-2 px-4 text-center space-x-2 flex justify-center">
-                      <button onClick={() => openFeedbackModal(user)} className="px-2 py-1 text-white rounded hover:scale-125 transition">
-                        <FaPhone className="text-black"/>
+                      <button
+                        onClick={() => openFeedbackModal(user)}
+                        className="px-2 py-1 text-white rounded hover:scale-125 transition"
+                      >
+                        <FaPhone className="text-black" />
                       </button>
-                      <button onClick={() => openDeleteModal(user)} className="px-2 py-1 text-white rounded hover:scale-125 transition">
-                        <AiFillDelete className="text-black"/>
+                      <button
+                        onClick={() => openDeleteModal(user)}
+                        className="px-2 py-1 text-white rounded hover:scale-125 transition"
+                      >
+                        <AiFillDelete className="text-black" />
                       </button>
-                      <button onClick={() => openPaymentModal(user)} className="px-2 py-1 text-white hover:bg-green-600 bg-green-500 rounded hover:scale-110 transition">
-                        100% 💰
+                      <button
+                        onClick={() => openPaymentModal(user)}
+                        className="flex items-center justify-center gap-1 px-2 py-1 text-white bg-green-500 hover:bg-green-600 rounded hover:scale-110 transition"
+                      >
+                        100% <FaMoneyBillWave />
                       </button>
-                      <button onClick={() => openAdvanceModal(user)} className="px-2 py-1 text-white hover:bg-yellow-600 bg-yellow-500 rounded hover:scale-110 transition">
-                        <BiCreditCard className="text-black"/>
+
+                      <button
+                        onClick={() => openAdvanceModal(user)}
+                        className="px-2 py-1 text-white hover:bg-yellow-600 bg-yellow-500 rounded hover:scale-110 transition"
+                      >
+                        <BiCreditCard className="text-black" />
                       </button>
                     </td>
                   </tr>
@@ -362,11 +419,15 @@ const HomePage = () => {
       {showLeadsModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50 overflow-auto p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h3 className="text-lg font-semibold mb-4 text-center text-blue-700">➕ Yangi mijoz qo'shish</h3>
-            
+            <h3 className="text-lg font-semibold mb-4 text-center text-blue-700">
+              <FaUserPlus /> Yangi mijoz qo'shish
+            </h3>
+
             <div className="mb-4 p-3 bg-blue-50 rounded text-center">
               <span className="text-sm text-gray-600">Qo'shilgan sana: </span>
-              <span className="font-semibold text-blue-700">{formatUzTime(new Date())}</span>
+              <span className="font-semibold text-blue-700">
+                {formatUzTime(new Date())}
+              </span>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -375,30 +436,58 @@ const HomePage = () => {
                 type="text"
                 className="border border-gray-300 rounded px-3 py-2"
                 value={leadsData.name}
-                onChange={(e) => setLeadsData({ ...leadsData, name: e.target.value })}
+                onChange={(e) =>
+                  setLeadsData({ ...leadsData, name: e.target.value })
+                }
                 placeholder="Ism kiriting"
               />
+
+              <label>Familyasi *</label>
+              <input
+                type="text"
+                className="border border-gray-300 rounded px-3 py-2"
+                value={leadsData.lastname}
+                onChange={(e) =>
+                  setLeadsData({ ...leadsData, lastname: e.target.value })
+                }
+                placeholder="Familya kiriting"
+              />
+
               <label>Telefon raqami *</label>
               <input
                 type="text"
                 className="border border-gray-300 rounded px-3 py-2"
                 value={leadsData.phone}
-                onChange={(e) => handlePhoneChange(e.target.value, 'phone')}
+                onChange={(e) => handlePhoneChange(e.target.value, "phone")}
                 placeholder="+998 90 123 45 67"
                 maxLength="17"
               />
+
               <label>Telegram yoki WhatsApp</label>
               <input
                 type="text"
                 className="border border-gray-300 rounded px-3 py-2"
                 value={leadsData.extraPhone}
-                onChange={(e) => setLeadsData({ ...leadsData, extraPhone: e.target.value })}
+                onChange={(e) =>
+                  setLeadsData({ ...leadsData, extraPhone: e.target.value })
+                }
                 placeholder="@username yoki telefon raqam"
               />
             </div>
+
             <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowLeadsModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
-              <button onClick={handleLeadsSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Qo'shish</button>
+              <button
+                onClick={() => setShowLeadsModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={handleLeadsSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              >
+                Qo'shish
+              </button>
             </div>
           </div>
         </div>
@@ -408,13 +497,17 @@ const HomePage = () => {
       {showPaymentModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50 overflow-auto p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h3 className="text-lg font-semibold mb-4 text-center text-green-700">💰 To'lov ma'lumotlari</h3>
+            <h3 className="text-lg font-semibold mb-4 text-center text-green-700">
+              💰 To'lov ma'lumotlari
+            </h3>
             <div className="flex flex-col gap-3">
               <label>Tarif</label>
               <select
                 className="border border-gray-300 rounded px-3 py-2"
                 value={paymentData.tarif}
-                onChange={(e) => setPaymentData({ ...paymentData, tarif: e.target.value })}
+                onChange={(e) =>
+                  setPaymentData({ ...paymentData, tarif: e.target.value })
+                }
               >
                 <option value="">Tanlang</option>
                 <option value="razgovor">Razgovor</option>
@@ -424,34 +517,79 @@ const HomePage = () => {
               <select
                 className="border border-gray-300 rounded px-3 py-2"
                 value={paymentData.groupName}
-                onChange={(e) => setPaymentData({ ...paymentData, groupName: e.target.value })}
+                onChange={(e) =>
+                  setPaymentData({ ...paymentData, groupName: e.target.value })
+                }
               >
                 <option value="">Guruh tanlang</option>
                 {groups.length === 0 ? (
                   <option disabled>Guruhlar topilmadi</option>
                 ) : (
                   groups.map((group) => (
-                    <option key={group.id} value={group.name || group.groupName || group.title}>
+                    <option
+                      key={group.id}
+                      value={group.name || group.groupName || group.title}
+                    >
                       {group.name || group.groupName || group.title || group.id}
                     </option>
                   ))
                 )}
               </select>
               <label>Operator ismi</label>
-              <input type="text" className="border border-gray-300 rounded px-3 py-2" value={paymentData.operator} onChange={(e) => setPaymentData({ ...paymentData, operator: e.target.value })}/>
+              <input
+                type="text"
+                className="border border-gray-300 rounded px-3 py-2"
+                value={paymentData.operator}
+                onChange={(e) =>
+                  setPaymentData({ ...paymentData, operator: e.target.value })
+                }
+              />
               <label>To'lov summasi</label>
-              <input type="number" className="border border-gray-300 rounded px-3 py-2" value={paymentData.amount} onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}/>
+              <input
+                type="number"
+                className="border border-gray-300 rounded px-3 py-2"
+                value={paymentData.amount}
+                onChange={(e) =>
+                  setPaymentData({ ...paymentData, amount: e.target.value })
+                }
+              />
               <label>To'lov sanasi</label>
-              <input type="date" className="border border-gray-300 rounded px-3 py-2" value={paymentData.date} onChange={(e) => setPaymentData({ ...paymentData, date: e.target.value })}/>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-3 py-2"
+                value={paymentData.date}
+                onChange={(e) =>
+                  setPaymentData({ ...paymentData, date: e.target.value })
+                }
+              />
               <label>To'lov turi</label>
-              <select className="border border-gray-300 rounded px-3 py-2" value={paymentData.paymentType} onChange={(e) => setPaymentData({ ...paymentData, paymentType: e.target.value })}>
+              <select
+                className="border border-gray-300 rounded px-3 py-2"
+                value={paymentData.paymentType}
+                onChange={(e) =>
+                  setPaymentData({
+                    ...paymentData,
+                    paymentType: e.target.value,
+                  })
+                }
+              >
                 <option value="naqt">Naqt</option>
                 <option value="karta">Karta</option>
               </select>
             </div>
             <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowPaymentModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
-              <button onClick={handlePaymentSubmit} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">Saqlash</button>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={handlePaymentSubmit}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+              >
+                Saqlash
+              </button>
             </div>
           </div>
         </div>
@@ -461,7 +599,9 @@ const HomePage = () => {
       {showAdvanceModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50 overflow-auto p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h3 className="text-lg font-semibold mb-4 text-center text-yellow-700">💳 Oldindan to'lov</h3>
+            <h3 className="text-lg font-semibold mb-4 text-center text-yellow-700">
+              💳 Oldindan to'lov
+            </h3>
             <div className="flex flex-col gap-3">
               <label>To'lov summasi</label>
               <input
@@ -473,8 +613,18 @@ const HomePage = () => {
               />
             </div>
             <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowAdvanceModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
-              <button onClick={handleAdvanceSubmit} className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">Jo'natish</button>
+              <button
+                onClick={() => setShowAdvanceModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={handleAdvanceSubmit}
+                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition"
+              >
+                Jo'natish
+              </button>
             </div>
           </div>
         </div>
@@ -484,7 +634,9 @@ const HomePage = () => {
       {showModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[400px] shadow-lg">
-            <h3 className="text-lg font-semibold mb-4 text-center text-blue-700">📞 Qayta aloqa sababi</h3>
+            <h3 className="text-lg font-semibold mb-4 text-center text-blue-700">
+              📞 Qayta aloqa sababi
+            </h3>
             <textarea
               value={feedbackReason}
               onChange={(e) => setFeedbackReason(e.target.value)}
@@ -492,8 +644,18 @@ const HomePage = () => {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></textarea>
             <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Bekor qilish</button>
-              <button onClick={handleFeedbackSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Saqlash</button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              >
+                Saqlash
+              </button>
             </div>
           </div>
         </div>
@@ -503,8 +665,12 @@ const HomePage = () => {
       {showDeleteModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[400px] shadow-lg text-center">
-            <h3 className="text-lg font-semibold text-red-600 mb-3">🗑 Foydalanuvchini o'chirish</h3>
-            <p className="text-gray-700 mb-3">{selectedUser?.name} ni ro'yxatdan o'chirmoqchimisiz?</p>
+            <h3 className="text-lg font-semibold text-red-600 mb-3">
+              🗑 Foydalanuvchini o'chirish
+            </h3>
+            <p className="text-gray-700 mb-3">
+              {selectedUser?.name} ni ro'yxatdan o'chirmoqchimisiz?
+            </p>
             <textarea
               value={feedbackReason}
               onChange={(e) => setFeedbackReason(e.target.value)}

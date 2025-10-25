@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AiFillDelete } from "react-icons/ai";
+import { MdOutlinePayment } from "react-icons/md";
 
 const AdvancePaymentPage = () => {
   const [payments, setPayments] = useState([]);
@@ -101,8 +102,9 @@ const AdvancePaymentPage = () => {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-4 px-2">
-      <h2 className="text-xl sm:text-3xl font-bold text-yellow-600 mb-3">
-        💳 Oldindan to‘lovlar ro‘yxati
+      <h2 className="flex items-center justify-center gap-2 text-xl sm:text-3xl font-bold text-yellow-600 mb-3 text-center">
+        <MdOutlinePayment />
+        Oldindan to‘lovlar ro‘yxati
       </h2>
 
       {/* 🔹 Jami to‘lovlar tepada */}
