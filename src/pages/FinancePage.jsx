@@ -170,7 +170,7 @@ const FinancePage = () => {
                   {/* Pastki panel */}
                   {expandedRow === p.id && (
                     <tr>
-                      <td colSpan={5} className="bg-gray-50 border-b p-4">
+                      <td colSpan={5} className="bg-gray-100 border-b p-4">
                         {editPaymentId === p.id ? (
                           // ✏️ Tahrirlash formasi
                           <div className="grid sm:grid-cols-2 gap-2">
