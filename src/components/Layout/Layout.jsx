@@ -7,7 +7,7 @@ const Layout = ({ setIsLoggedIn }) => {
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(true); // 🔹 Sidebar holati (Pages bilan sinxron)
 
   return (
-    <section className="w-full min-h-screen flex flex-col bg-gray-50">
+    <section className="h-auto flex flex-col bg-gray-50">
       {/* --- Navbar --- */}
       <NavbarPage setIsLoggedIn={setIsLoggedIn} />
 
@@ -15,9 +15,7 @@ const Layout = ({ setIsLoggedIn }) => {
       <div className="flex flex-1">
         {/* Chapdagi sidebar (faqat katta ekranlarda) */}
         <aside
-          className={`hidden sm:block h-[calc(100vh-4rem)] overflow-y-auto transition-all duration-300 ${
-            desktopMenuOpen ? "w-60" : "w-16"
-          }`}
+          className={`hidden sm:block h-[calc(100vh-4rem)] overflow-y-auto transition-all duration-300 w-auto`}
         >
           <Pages
             desktopMenuOpen={desktopMenuOpen}

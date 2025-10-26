@@ -38,6 +38,7 @@ const HomePage = () => {
   const [advanceAmount, setAdvanceAmount] = useState("");
   const [leadsData, setLeadsData] = useState({
     name: "",
+    lastname: "",
     phone: "+998 ",
     extraPhone: "",
   });
@@ -125,14 +126,15 @@ const HomePage = () => {
   };
 
   const handleLeadsSubmit = async () => {
-    if (!leadsData.name.trim() || leadsData.phone.length < 17) {
-      alert("❌ Ism va to'liq telefon raqamini to'ldiring!");
+    if (!leadsData.name.trim() || !leadsData.lastname.trim() || leadsData.phone.length < 17) {
+      alert("❌ Ism, familya va to'liq telefon raqamini to'ldiring!");
       return;
     }
     try {
       const now = new Date();
       await addDoc(collection(db, "registrations"), {
         name: leadsData.name,
+        surname: leadsData.lastname,
         phone: leadsData.phone,
         extraPhone: leadsData.extraPhone || "",
         createdAt: now.toISOString(),
@@ -228,6 +230,7 @@ const HomePage = () => {
           doc(db, "groups", selectedGroup.id, "students", selectedUser.id),
           {
             name: selectedUser.name,
+            surname: selectedUser.surname || "",
             phone: selectedUser.phone,
             extraPhone: selectedUser.extraPhone || "",
             tarif: paymentData.tarif,
@@ -247,6 +250,7 @@ const HomePage = () => {
           groupId: selectedGroup.id,
           groupName: paymentData.groupName,
           name: selectedUser.name,
+          surname: selectedUser.surname || "",
           phone: selectedUser.phone,
           extraPhone: selectedUser.extraPhone || "",
           tarif: paymentData.tarif,
@@ -328,17 +332,17 @@ const HomePage = () => {
       <div className="w-full max-w-5xl mb-4 flex gap-2">
         <button
           onClick={openLeadsModal}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap"
+          className="h-[42px] px-4 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex items-center justify-center gap-2"
         >
-          <FaUserPlus />
-          Leads qo'shish
+          <FaUserPlus className="text-lg" />
+          <span className="hidden sm:inline">Leads qo'shish</span>
         </button>
         <input
           type="text"
           placeholder="Ism yoki raqam orqali qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 h-[42px] border border-gray-300 rounded px-4 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -420,7 +424,7 @@ const HomePage = () => {
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50 overflow-auto p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
             <h3 className="text-lg font-semibold mb-4 text-center text-blue-700">
-              <FaUserPlus /> Yangi mijoz qo'shish
+              <FaUserPlus className="inline mr-2" /> Yangi mijoz qo'shish
             </h3>
 
             <div className="mb-4 p-3 bg-blue-50 rounded text-center">

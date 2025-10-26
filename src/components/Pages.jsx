@@ -12,8 +12,8 @@ import {
   FaUsers,
   FaLayerGroup,
   FaClipboardList,
-  FaUserMinus, // qarzdorlar icon
-  FaWallet, // oldindan to'lov icon
+  FaUserMinus,
+  FaWallet,
 } from "react-icons/fa";
 
 const Pages = () => {
@@ -22,7 +22,7 @@ const Pages = () => {
 
   const userRole = localStorage.getItem("role");
 
-  // 🔹 Barcha foydalanuvchilar uchun umumiy sahifalar
+  // Barcha foydalanuvchilar uchun umumiy sahifalar
   const commonLinks = [
     { to: "/", label: "Leads", labelEn: "Leads", icon: <FaHome size={20} /> },
     { to: "/feedback", label: "Qayta A'loqa", labelEn: "Feedback", icon: <FaComments size={20} /> },
@@ -32,7 +32,7 @@ const Pages = () => {
     { to: "/debtors", label: "Qarzdorlar", labelEn: "Debtors", icon: <FaUserMinus size={20} /> },
   ];
 
-  // 🔹 Foydalanuvchi roliga qarab qo‘shimcha sahifalar
+  // Foydalanuvchi roliga qarab qo'shimcha sahifalar
   let roleLinks = [];
 
   if (userRole === "manager") {
@@ -55,10 +55,10 @@ const Pages = () => {
     ];
   }
 
-  // 🔹 Teacher uchun faqat roleLinks ishlatiladi, boshqa rollar uchun commonLinks + roleLinks
+  // Teacher uchun faqat roleLinks ishlatiladi, boshqa rollar uchun commonLinks + roleLinks
   const linksToRender = userRole === "teacher" ? roleLinks : [...commonLinks, ...roleLinks];
 
-  // 🔹 Mobil pastki menyuda faqat Leads, Feedback, Deleted, Finance + Menu tugmasi
+  // Mobil pastki menyuda faqat Leads, Feedback, Deleted, Finance + Menu tugmasi
   const mobileLinks = userRole === "teacher"
     ? roleLinks
     : commonLinks
@@ -129,7 +129,7 @@ const Pages = () => {
         )}
       </nav>
 
-      {/* --- MOBIL QO‘SHIMCHA MENU (ochilganda) --- */}
+      {/* --- MOBIL QO'SHIMCHA MENU (ochilganda) --- */}
       {mobileMenuOpen && (
         <div className="sm:hidden fixed bottom-12 left-0 w-full bg-white border-t shadow-md z-50 flex flex-col">
           {linksToRender
