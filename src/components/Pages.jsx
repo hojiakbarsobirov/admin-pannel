@@ -73,7 +73,7 @@ const Pages = () => {
       {/* --- CHAP SIDEBAR (desktop uchun) --- */}
       <section
         className={`hidden sm:flex flex-col justify-start py-5 px-2 bg-white border-r transition-all duration-300 ${
-          desktopMenuOpen ? "w-60" : "w-16"
+          desktopMenuOpen ? "w-auto" : "w-16"
         }`}
       >
         <button
