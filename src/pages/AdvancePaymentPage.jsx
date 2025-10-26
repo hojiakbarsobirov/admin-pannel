@@ -227,7 +227,7 @@ const AdvancePaymentPage = () => {
   );
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-4 px-2">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center py-0 px-0">
       <h2 className="flex items-center justify-center gap-2 text-xl sm:text-3xl font-bold text-yellow-600 mb-3 text-center">
         <MdOutlinePayment />
         Oldindan to'lovlar ro'yxati
@@ -254,7 +254,7 @@ const AdvancePaymentPage = () => {
           Hech qanday oldindan to'lov topilmadi
         </p>
       ) : (
-        <div className="overflow-x-auto w-full max-w-5xl rounded">
+        <div className="overflow-x-auto w-full max-w-auto rounded">
           <table className="min-w-full text-left border-collapse text-sm sm:text-base">
             <thead className="bg-yellow-500 text-white">
               <tr>
