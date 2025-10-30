@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot, setDoc, getDocs, addDoc } from "firebase/firestore";
 import { AiFillDelete } from "react-icons/ai";
-import { FaPhoneAlt } from "react-icons/fa";
+import { FaPhoneAlt, FaMoneyBillWave } from "react-icons/fa";
 
 const FeedBackPage = () => {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -11,6 +11,7 @@ const FeedBackPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [groups, setGroups] = useState([]);
   const [paymentData, setPaymentData] = useState({
     tarif: "",
     groupName: "",
@@ -32,7 +33,27 @@ const FeedBackPage = () => {
     return () => unsub();
   }, []);
 
-  // 🗑 O‘chirish
+  // Guruhlarni olish
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  const fetchGroups = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "groups"));
+      const groupsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("Guruhlar yuklandi:", groupsData);
+      setGroups(groupsData);
+    } catch (error) {
+      console.error("Guruhlarni yuklashda xatolik:", error);
+      alert("⚠️ Guruhlarni yuklashda xatolik yuz berdi!");
+    }
+  };
+
+  // 🗑 O'chirish
   const handleConfirmDelete = async () => {
     if (!selectedUser) return;
     try {
@@ -48,11 +69,11 @@ const FeedBackPage = () => {
       navigate("/deleted-users");
     } catch (error) {
       console.error(error);
-      alert("O‘chirishda muammo yuz berdi!");
+      alert("O'chirishda muammo yuz berdi!");
     }
   };
 
-  // 💰 To‘lov
+  // 💰 To'lov modalni ochish
   const openPaymentModal = (user) => {
     setSelectedUser(user);
     setShowPaymentModal(true);
@@ -66,36 +87,88 @@ const FeedBackPage = () => {
     });
   };
 
+  // 💰 To'lovni saqlash (HomePage dagi funksiya)
   const handlePaymentSubmit = async () => {
-    const { tarif, groupName, operator, amount, paymentType, date } = paymentData;
-    if (!tarif || !groupName || !operator || !amount || !date) {
-      alert("❌ Barcha maydonlarni to‘ldiring!");
+    if (
+      !paymentData.tarif ||
+      !paymentData.groupName ||
+      !paymentData.operator ||
+      !paymentData.amount ||
+      !paymentData.date
+    ) {
+      alert("❌ Barcha maydonlarni to'ldiring!");
       return;
     }
-
     try {
-      const paymentInfo = {
+      // payments ga saqlash
+      await setDoc(doc(db, "payments", selectedUser.id), {
         ...selectedUser,
-        tarif,
-        groupName,
-        operator,
-        amount,
-        paymentType,
-        date,
+        ...paymentData,
         paymentAt: new Date().toISOString(),
-      };
+      });
 
-      // 🔹 Shu foydalanuvchining ID si bilan `payments` kolleksiyasiga saqlaymiz
-      await setDoc(doc(db, "payments", selectedUser.id), paymentInfo);
+      // Tanlangan guruhga students ga qo'shish
+      const selectedGroup = groups.find(
+        (g) =>
+          g.name === paymentData.groupName ||
+          g.groupName === paymentData.groupName ||
+          g.title === paymentData.groupName
+      );
 
-      // 🔹 feedback dan o‘chiramiz
+      if (selectedGroup) {
+        const studentAddedDate = new Date().toISOString();
+
+        // groups/{groupId}/students ga qo'shish
+        await setDoc(
+          doc(db, "groups", selectedGroup.id, "students", selectedUser.id),
+          {
+            name: selectedUser.name,
+            surname: selectedUser.surname || "",
+            phone: selectedUser.phone,
+            extraPhone: selectedUser.extraPhone || "",
+            tarif: paymentData.tarif,
+            amount: paymentData.amount,
+            paymentType: paymentData.paymentType,
+            operator: paymentData.operator,
+            createdAt:
+              selectedUser.createdAt instanceof Date
+                ? selectedUser.createdAt.toISOString()
+                : selectedUser.createdAt,
+            addedAt: studentAddedDate,
+          }
+        );
+
+        // students kolleksiyasiga ham qo'shish (StudentsPage uchun)
+        await addDoc(collection(db, "students"), {
+          groupId: selectedGroup.id,
+          groupName: paymentData.groupName,
+          name: selectedUser.name,
+          surname: selectedUser.surname || "",
+          phone: selectedUser.phone,
+          extraPhone: selectedUser.extraPhone || "",
+          tarif: paymentData.tarif,
+          amount: paymentData.amount,
+          paymentType: paymentData.paymentType,
+          operator: paymentData.operator,
+          teacherId: selectedGroup.teacherId || "",
+          createdAt:
+            selectedUser.createdAt instanceof Date
+              ? selectedUser.createdAt.toISOString()
+              : selectedUser.createdAt,
+          addedAt: studentAddedDate,
+        });
+      }
+
+      // feedback dan o'chirish
       await deleteDoc(doc(db, "feedback", selectedUser.id));
-
+      
+      setFeedbacks(feedbacks.filter((u) => u.id !== selectedUser.id));
       setShowPaymentModal(false);
-      navigate("/finance");
+      alert("✅ To'lov muvaffaqiyatli saqlandi va mijoz guruhga qo'shildi!");
+      navigate(`/finance?id=${selectedUser.id}`);
     } catch (error) {
-      console.error("To‘lov saqlashda xatolik:", error);
-      alert("❌ To‘lov saqlashda xatolik yuz berdi!");
+      console.error("To'lov saqlashda xatolik:", error);
+      alert("❌ To'lov saqlashda xatolik yuz berdi!");
     }
   };
 
@@ -109,6 +182,16 @@ const FeedBackPage = () => {
     const h = String(date.getHours()).padStart(2, "0");
     const min = String(date.getMinutes()).padStart(2, "0");
     return `${d}.${m}.${y} - ${h}:${min}`;
+  };
+
+  // Telefon raqamni ko'rsatish uchun formatlash
+  const displayPhoneNumber = (phone) => {
+    if (!phone) return "-";
+    const numbers = phone.replace(/\D/g, "");
+    if (numbers.length < 12) return phone;
+    
+    const afterCode = numbers.slice(3);
+    return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(2, 5)} ${afterCode.slice(5, 7)} ${afterCode.slice(7, 9)}`;
   };
 
   return (
@@ -135,7 +218,7 @@ const FeedBackPage = () => {
                   <th className="py-3 px-4 font-medium">Ism</th>
                   <th className="py-3 px-4 font-medium">Telefon</th>
                   <th className="py-3 px-4 font-medium">Sabab</th>
-                  <th className="py-3 px-4 font-medium">Qo‘shilgan sana</th>
+                  <th className="py-3 px-4 font-medium">Qo'shilgan sana</th>
                   <th className="py-3 px-4 font-medium text-center">Harakat</th>
                 </tr>
               </thead>
@@ -149,7 +232,7 @@ const FeedBackPage = () => {
                   >
                     <td className="py-2 px-4">{index + 1}</td>
                     <td className="py-2 px-4">{user.name}</td>
-                    <td className="py-2 px-4">{user.phone}</td>
+                    <td className="py-2 px-4">{displayPhoneNumber(user.phone)}</td>
                     <td className="py-2 px-4 text-gray-700 italic">
                       {user.feedbackReason || "-"}
                     </td>
@@ -157,9 +240,9 @@ const FeedBackPage = () => {
                     <td className="py-2 px-4 text-center flex justify-center gap-2">
                       <button
                         onClick={() => openPaymentModal(user)}
-                        className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                        className="flex items-center justify-center gap-1 px-2 py-1 text-white bg-green-500 hover:bg-green-600 rounded hover:scale-110 transition"
                       >
-                        100% 💰
+                        100% <FaMoneyBillWave />
                       </button>
                       <button
                         onClick={() => {
@@ -179,15 +262,15 @@ const FeedBackPage = () => {
         )}
       </div>
 
-      {/* 🗑 O‘chirish modali */}
+      {/* 🗑 O'chirish modali */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 w-[90%] sm:w-[380px] shadow-lg text-center">
             <h3 className="text-lg font-semibold text-red-600 mb-3">
-              🗑 {selectedUser?.name} ni o‘chirmoqchimisiz?
+              🗑 {selectedUser?.name} ni o'chirmoqchimisiz?
             </h3>
             <p className="text-gray-700 mb-5">
-              Ushbu foydalanuvchi "Deleted Users" sahifasiga o‘tkaziladi.
+              Ushbu foydalanuvchi "Deleted Users" sahifasiga o'tkaziladi.
             </p>
             <div className="flex justify-center gap-4">
               <button
@@ -200,38 +283,21 @@ const FeedBackPage = () => {
                 onClick={handleConfirmDelete}
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
               >
-                Ha, o‘chirilsin
+                Ha, o'chirilsin
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 💰 To‘lov modali */}
+      {/* 💰 To'lov modali */}
       {showPaymentModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50 overflow-auto p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
             <h3 className="text-lg font-semibold mb-4 text-center text-green-700">
-              💰 To‘lov ma’lumotlari
+              💰 To'lov ma'lumotlari
             </h3>
-
             <div className="flex flex-col gap-3">
-              <label>Ism</label>
-              <input
-                type="text"
-                value={selectedUser?.name || ""}
-                readOnly
-                className="border border-gray-300 rounded px-3 py-2 bg-gray-100"
-              />
-
-              <label>Telefon</label>
-              <input
-                type="text"
-                value={selectedUser?.phone || ""}
-                readOnly
-                className="border border-gray-300 rounded px-3 py-2 bg-gray-100"
-              />
-
               <label>Tarif</label>
               <select
                 className="border border-gray-300 rounded px-3 py-2"
@@ -244,17 +310,28 @@ const FeedBackPage = () => {
                 <option value="razgovor">Razgovor</option>
                 <option value="premium">Premium</option>
               </select>
-
               <label>Guruh nomi</label>
-              <input
-                type="text"
+              <select
                 className="border border-gray-300 rounded px-3 py-2"
                 value={paymentData.groupName}
                 onChange={(e) =>
                   setPaymentData({ ...paymentData, groupName: e.target.value })
                 }
-              />
-
+              >
+                <option value="">Guruh tanlang</option>
+                {groups.length === 0 ? (
+                  <option disabled>Guruhlar topilmadi</option>
+                ) : (
+                  groups.map((group) => (
+                    <option
+                      key={group.id}
+                      value={group.name || group.groupName || group.title}
+                    >
+                      {group.name || group.groupName || group.title || group.id}
+                    </option>
+                  ))
+                )}
+              </select>
               <label>Operator ismi</label>
               <input
                 type="text"
@@ -264,8 +341,7 @@ const FeedBackPage = () => {
                   setPaymentData({ ...paymentData, operator: e.target.value })
                 }
               />
-
-              <label>To‘lov summasi</label>
+              <label>To'lov summasi</label>
               <input
                 type="number"
                 className="border border-gray-300 rounded px-3 py-2"
@@ -274,8 +350,7 @@ const FeedBackPage = () => {
                   setPaymentData({ ...paymentData, amount: e.target.value })
                 }
               />
-
-              <label>To‘lov sanasi</label>
+              <label>To'lov sanasi</label>
               <input
                 type="date"
                 className="border border-gray-300 rounded px-3 py-2"
@@ -284,20 +359,21 @@ const FeedBackPage = () => {
                   setPaymentData({ ...paymentData, date: e.target.value })
                 }
               />
-
-              <label>To‘lov turi</label>
+              <label>To'lov turi</label>
               <select
                 className="border border-gray-300 rounded px-3 py-2"
                 value={paymentData.paymentType}
                 onChange={(e) =>
-                  setPaymentData({ ...paymentData, paymentType: e.target.value })
+                  setPaymentData({
+                    ...paymentData,
+                    paymentType: e.target.value,
+                  })
                 }
               >
                 <option value="naqt">Naqt</option>
                 <option value="karta">Karta</option>
               </select>
             </div>
-
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setShowPaymentModal(false)}
