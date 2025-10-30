@@ -40,17 +40,17 @@ const Pages = () => {
       { to: "/admin-page", label: "Admin", labelEn: "Admin", icon: <FaUserTie size={20} /> },
       { to: "/statistika", label: "Statistika", labelEn: "Statistics", icon: <FaChartPie size={20} /> },
       { to: "/manager-page", label: "Menejer Sahifasi", labelEn: "Manager Page", icon: <FaUsers size={20} /> },
-      { to: "/create-group", label: "Guruh yaratish", labelEn: "Create Group", icon: <FaLayerGroup size={20} /> },
+      { to: "/create-group", label: "Guruhlar", labelEn: "Create Group", icon: <FaLayerGroup size={20} /> },
       { to: "/advance-payment", label: "Oldindan to'lov", labelEn: "Advance Payment", icon: <FaWallet size={20} /> },
     ];
   } else if (userRole === "admin") {
     roleLinks = [
-      { to: "/create-group", label: "Guruh yaratish", labelEn: "Create Group", icon: <FaLayerGroup size={20} /> },
+      { to: "/create-group", label: "Guruhlar", labelEn: "Create Group", icon: <FaLayerGroup size={20} /> },
       { to: "/advance-payment", label: "Oldindan to'lov", labelEn: "Advance Payment", icon: <FaWallet size={20} /> },
     ];
   } else if (userRole === "teacher") {
     roleLinks = [
-      { to: "/teachers", label: "O'qituvchilar", labelEn: "Teachers", icon: <FaChalkboardTeacher size={20} /> },
+      { to: "/teachers", label: "O'quvchilar", labelEn: "Students", icon: <FaChalkboardTeacher size={20} /> },
       { to: "/attendance", label: "Davomatlar", labelEn: "Attendance", icon: <FaClipboardList size={20} /> },
     ];
   }

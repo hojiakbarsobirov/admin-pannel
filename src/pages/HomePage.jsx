@@ -120,6 +120,16 @@ const HomePage = () => {
     )} ${afterCode.slice(5, 7)} ${afterCode.slice(7, 9)}`;
   };
 
+  // Telefon raqamni ko'rsatish uchun formatlash funksiyasi
+  const displayPhoneNumber = (phone) => {
+    if (!phone) return "-";
+    const numbers = phone.replace(/\D/g, "");
+    if (numbers.length < 12) return phone;
+    
+    const afterCode = numbers.slice(3);
+    return `+998 ${afterCode.slice(0, 2)} ${afterCode.slice(2, 5)} ${afterCode.slice(5, 7)} ${afterCode.slice(7, 9)}`;
+  };
+
   const handlePhoneChange = (value, field) => {
     const formatted = formatPhoneNumber(value);
     setLeadsData({ ...leadsData, [field]: formatted });
@@ -379,8 +389,8 @@ const HomePage = () => {
                   >
                     <td className="py-2 px-4">{index + 1}</td>
                     <td className="py-2 px-4">{user.name}</td>
-                    <td className="py-2 px-4">{user.phone}</td>
-                    <td className="py-2 px-4">{user.extraPhone || "-"}</td>
+                    <td className="py-2 px-4">{displayPhoneNumber(user.phone)}</td>
+                    <td className="py-2 px-4">{user.extraPhone ? displayPhoneNumber(user.extraPhone) : "-"}</td>
                     <td className="py-2 px-4">
                       {formatUzTime(user.createdAt)}
                     </td>
