@@ -184,7 +184,7 @@ const HomePage = () => {
       setShowModal(false);
       setFeedbackReason("");
       setSelectedUser(null);
-      navigate("/feedback");
+      navigate("/");
     } catch (error) {
       console.error("Feedback yozishda xatolik:", error);
       alert("❌ Qayta aloqa yozishda muammo yuz berdi!");
@@ -717,7 +717,7 @@ const HomePage = () => {
                     setUsers(users.filter((u) => u.id !== selectedUser.id));
                     setShowDeleteModal(false);
                     setFeedbackReason("");
-                    navigate("/deleted-users");
+                    navigate("/");
                   } catch (error) {
                     console.error("O'chirishda xatolik:", error);
                     alert("❌ O'chirishda muammo yuz berdi!");

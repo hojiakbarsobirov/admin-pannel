@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, deleteDoc, doc, onSnapshot, setDoc, getDocs, addDoc } from "firebase/firestore";
-import { AiFillDelete } from "react-icons/ai";
+import { collection, deleteDoc, doc, onSnapshot, setDoc, getDocs, addDoc, updateDoc } from "firebase/firestore";
+import { AiFillDelete, AiFillEdit } from "react-icons/ai";
 import { FaPhoneAlt, FaMoneyBillWave } from "react-icons/fa";
 
 const FeedBackPage = () => {
@@ -11,6 +11,8 @@ const FeedBackPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editReason, setEditReason] = useState("");
   const [groups, setGroups] = useState([]);
   const [paymentData, setPaymentData] = useState({
     tarif: "",
@@ -53,6 +55,36 @@ const FeedBackPage = () => {
     }
   };
 
+  // 📝 Edit modalni ochish
+  const openEditModal = (user) => {
+    setSelectedUser(user);
+    setEditReason(user.feedbackReason || "");
+    setShowEditModal(true);
+  };
+
+  // 📝 Sababni yangilash
+  const handleEditSubmit = async () => {
+    if (!editReason.trim()) {
+      alert("❌ Sababni kiriting!");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "feedback", selectedUser.id), {
+        feedbackReason: editReason.trim(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      setShowEditModal(false);
+      setSelectedUser(null);
+      setEditReason("");
+      alert("✅ Sabab muvaffaqiyatli yangilandi!");
+    } catch (error) {
+      console.error("Yangilashda xatolik:", error);
+      alert("❌ Yangilashda xatolik yuz berdi!");
+    }
+  };
+
   // 🗑 O'chirish
   const handleConfirmDelete = async () => {
     if (!selectedUser) return;
@@ -87,7 +119,7 @@ const FeedBackPage = () => {
     });
   };
 
-  // 💰 To'lovni saqlash (HomePage dagi funksiya)
+  // 💰 To'lovni saqlash
   const handlePaymentSubmit = async () => {
     if (
       !paymentData.tarif ||
@@ -138,7 +170,7 @@ const FeedBackPage = () => {
           }
         );
 
-        // students kolleksiyasiga ham qo'shish (StudentsPage uchun)
+        // students kolleksiyasiga ham qo'shish
         await addDoc(collection(db, "students"), {
           groupId: selectedGroup.id,
           groupName: paymentData.groupName,
@@ -237,22 +269,33 @@ const FeedBackPage = () => {
                       {user.feedbackReason || "-"}
                     </td>
                     <td className="py-2 px-4">{formatUzTime(user.feedbackAt)}</td>
-                    <td className="py-2 px-4 text-center flex justify-center gap-2">
-                      <button
-                        onClick={() => openPaymentModal(user)}
-                        className="flex items-center justify-center gap-1 px-2 py-1 text-white bg-green-500 hover:bg-green-600 rounded hover:scale-110 transition"
-                      >
-                        100% <FaMoneyBillWave />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowDeleteModal(true);
-                        }}
-                        className="px-2 py-1 text-white hover:scale-125 transition"
-                      >
-                        <AiFillDelete className="text-black"/>
-                      </button>
+                    <td className="py-2 px-4 text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => openPaymentModal(user)}
+                          className="flex items-center justify-center gap-1 px-2 py-1 text-white bg-green-500 hover:bg-green-600 rounded hover:scale-110 transition"
+                          title="To'lov"
+                        >
+                          100% <FaMoneyBillWave />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(user)}
+                          className="px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded hover:scale-110 transition"
+                          title="Tahrirlash"
+                        >
+                          <AiFillEdit className="text-lg" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowDeleteModal(true);
+                          }}
+                          className="px-2 py-1 hover:scale-125 transition"
+                          title="O'chirish"
+                        >
+                          <AiFillDelete className="text-black text-lg"/>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -261,6 +304,53 @@ const FeedBackPage = () => {
           </div>
         )}
       </div>
+
+      {/* 📝 Edit modali */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[90%] sm:w-[480px] shadow-2xl">
+            <h3 className="text-xl font-bold text-blue-600 mb-4 text-center">
+              📝 Sababni tahrirlash
+            </h3>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                <strong>Mijoz:</strong> {selectedUser?.name}
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                <strong>Telefon:</strong> {displayPhoneNumber(selectedUser?.phone)}
+              </p>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Qayta aloqa sababi
+              </label>
+              <textarea
+                value={editReason}
+                onChange={(e) => setEditReason(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 resize-none"
+                rows="4"
+                placeholder="Sababni kiriting..."
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedUser(null);
+                  setEditReason("");
+                }}
+                className="px-5 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={handleEditSubmit}
+                className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              >
+                Saqlash
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 🗑 O'chirish modali */}
       {showDeleteModal && (
